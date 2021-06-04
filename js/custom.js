@@ -3,6 +3,8 @@
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
+ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
 let init = {
   get w() { return window.innerWidth },
   get h() { return window.innerHeight },
@@ -14,37 +16,40 @@ let init = {
   }
 }
 
-ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-// cubic-bezier(.17,.67,.83,.67)
-
 let road = {
-  h: init.h/6,
+  h: inProptn(1, 6),
   get y() { return init.h-this.h*1.5 },
-
   // for lines... new fav pattern ig isget (n 3s today) nice 2 kno what ur up to tho instead of giganturan expressions (statements??) n mostly here bc objs suck at self-awareness (no self-ref this)
   get linY() { return this.y+(this.h/3) },
   get linH() { return this.h/9 },
-  linW: init.w/9,
-
+  linW: inProptn(0, 9),
   draw() {
+    // curbs 1st easiest 2 just have behind
+    let shades = ['#9ca297', '#b1bab0'];
+    for (let i = 0; i < 2; i++) {
+      ctx.fillStyle = shades[i];
+      if (i) {
+        ctx.translate(0, 3.3);
+      }
+      ctx.fillRect(0, this.y-(this.linH/3)*1.5, init.w, this.h+(this.linH/3)*(3-i*1.5));
+    }
+    ctx.translate(0, -3.3);
+    // road itself
     ctx.fillStyle = 'black';
     ctx.fillRect(0, this.y, init.w, this.h);
-
-    let gap = this.linW/1.5;
-    // ctx.beginPath();
-
-    // for (let i = 0; i < 12; i++) {
-
-
-      // ctx.moveTo(gap*i+10, this.linY);
-      // ctx.lineTo((gap*i-10)+this.linW, this.linY);
-      // ctx.lineTo(gap*i+this.linW, this.linY+this.linH);
-      // ctx.lineTo(gap*i, this.linY+this.linH);
-      // ctx.closePath();
-      // ctx.fillStyle = 'white';
-      // ctx.fillRect(gap*i, this.linY, this.linW, this.linH);
-      // gap = this.linW+(this.linW/1.5);
-    // }
+    // road markings
+    let gap = this.linW/3;
+    for (let i = 0; i < 18; i++) {
+      ctx.beginPath();
+      ctx.fillStyle = 'white';
+      ctx.moveTo(gap*i+6, this.linY);
+      ctx.lineTo(gap*i+3+this.linW, this.linY);
+      ctx.lineTo(gap*i+this.linW, this.linY+this.linH);
+      ctx.lineTo(gap*i+1.5, this.linY+this.linH);
+      ctx.closePath();
+      ctx.fill();
+      gap = this.linW+(this.linW/1.5);
+    }
   }
 }
 
@@ -58,13 +63,20 @@ function resize() {
   road.draw();
 }
 
+function inProptn(nu, de) {
+  // f 4 width, since usually 0 in arr; t 4 h
+  return !nu ? Math.ceil(Math.abs(init.w/de))
+            : Math.ceil(Math.abs(init.h/de));
+}
 
-ctx.strokeStyle = 'red';
-ctx.beginPath();
-ctx.moveTo(10, 10);
-ctx.lineTo(190, 10);
-ctx.lineTo(200, 110);
-ctx.lineTo(0, 110);
-ctx.closePath();
+const ppl = document.querySelector('.ppl-img-cont');
+
+for (let i = 0; i < ppl.children.length; i++) {
+  ppl.children[i].addEventListener('click', function() {
+    ppl.children[i].classList.toggle('hide');
+    ppl.children[i+1].classList.toggle('hide');
+
+  }, false);
+}
 
 }());
