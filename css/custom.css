@@ -16,3 +16,7 @@ body {
 .hide {
   display: none;
 }
+
+.grass-cont > div {
+  position: absolute;
+}
