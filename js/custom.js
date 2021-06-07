@@ -5,6 +5,8 @@
 
   ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
+  var signBase;
+
   let init = {
     get w() { return window.innerWidth },
     get h() { return window.innerHeight },
@@ -49,41 +51,62 @@
         ctx.closePath();
         ctx.fill();
         gap = this.linW + (this.linW / 1.5);
+        // not simply gap+= this.linW since don't wanna move it along exponentially, gap isn't simply x coord but the offset 4 x
       }
       grass();
+    }
+  }
+
+  let grass = {
+    amt: inProptn(0, 50),
+    roots: [],
+    soil: null,
+    draw() {
+      for (let i = 0; i < 4; i++) {
+        soil = document.querySelector(`.grass${i}`);
+        for (let j = 0; j < amt; j++) {
+          roots[j] = new Image(50, 50);
+          roots[j].src = '../img/grs.png';
+          soil.appendChild(roots[j]);
+        }
+        if (i < 3) {
+          
+        }
+      }
     }
   }
 
   function grass() {
     //mayb better 4 reponsiveness as canv drawImag
     let amt = inProptn(0, 50);
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
       let roots = [];
       let soil = document.querySelector(`.grass${i}`);
       soil.style.width = `${amt * init.w}px`;
-      console.log(soil.width);
-      for (let i = 0; i < amt; i++) {
-        roots[i] = new Image(50, 50);
-        roots[i].src = '../img/grs.png';
-        soil.appendChild(roots[i]);
+      for (let j = 0; j < amt; j++) {
+        roots[j] = new Image(50, 50);
+        roots[j].src = '../img/grs.png';
+        soil.appendChild(roots[j]);
       }
-      if (i < 2) {
-        soil.style.bottom = `${(-i) * 30}px`;
-        soil.style.zIndex = i;
+      if (i < 3) {
+        soil.style.bottom = `${i * 30 - 50}px`;
+        // p allg now i think for responsiveness except when enlarged heaps
       } else {
         soil.style.top = `${road.y - 50 - (road.linH / 3)}px`;
-        console.log(road.y);
+        console.log(soil.style.top);
       }
     }
   }
 
   'load resize'.split(' ').forEach(function(e) {
+    // rescale things on both page load n resize
     window.addEventListener(e, draw2suit, false);
   })
 
   function draw2suit() {
     init.setScl();
     road.draw();
+    pageSign(`${Math.ceil(road.y - 100 - (road.linH / 3))}px`);
   }
 
   function inProptn(nu, de) {
@@ -92,14 +115,24 @@
               : Math.ceil(Math.abs(init.h / de));
   }
 
-  const ppl = document.querySelector('.ppl-img-cont');
-
-  for (let i = 0; i < ppl.children.length; i++) {
-    ppl.children[i].addEventListener('click', function() {
-      ppl.children[i].classList.toggle('hide');
-      ppl.children[i + 1].classList.toggle('hide');
-
-    }, false);
+  function pageSign(signX) {
+    let pS = document.querySelector('.page-sign');
+    // All in future...
+    pS.style.top = signX;
+    console.log(signX);
+    pS.style.height = `${inProptn(1, 6)}px`;
+    pS.style.width = `${inProptn(0, 120)}px`;
   }
+
+  // const ppl = document.querySelector('.ppl-img-cont');
+  //
+  // for (let i = 0; i < ppl.children.length; i++) {
+  //   ppl.children[i].addEventListener('click', function() {
+  //     ppl.children[i].classList.toggle('hide');
+  //     ppl.children[i + 1].classList.toggle('hide');
+  //
+  //   }, false);
+  // }
+
 
 }());
