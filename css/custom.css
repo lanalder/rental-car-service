@@ -21,7 +21,7 @@ body {
   position: absolute;
 }
 
-.page-sign {
+.page-sign-cont > div {
   position: absolute;
   background-color: #a9afad;
   z-index: -1;

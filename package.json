@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "animejs": "^3.2.1",
+    "gulp": "^4.0.2"
+  },
+  "devDependencies": {
+    "stream": "^0.0.2",
+    "webpack": "^5.38.1"
+  }
+}

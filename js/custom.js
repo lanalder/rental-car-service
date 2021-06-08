@@ -1,11 +1,12 @@
 (function () {
 
+  // import anime from 'animejs/lib/anime.es.js';
+  // const anime = require('animejs');
+
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
 
   ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-
-  var signBase;
 
   let init = {
     get w() { return window.innerWidth },
@@ -57,25 +58,6 @@
     }
   }
 
-  let grass = {
-    amt: inProptn(0, 50),
-    roots: [],
-    soil: null,
-    draw() {
-      for (let i = 0; i < 4; i++) {
-        soil = document.querySelector(`.grass${i}`);
-        for (let j = 0; j < amt; j++) {
-          roots[j] = new Image(50, 50);
-          roots[j].src = '../img/grs.png';
-          soil.appendChild(roots[j]);
-        }
-        if (i < 3) {
-          
-        }
-      }
-    }
-  }
-
   function grass() {
     //mayb better 4 reponsiveness as canv drawImag
     let amt = inProptn(0, 50);
@@ -106,7 +88,7 @@
   function draw2suit() {
     init.setScl();
     road.draw();
-    pageSign(`${Math.ceil(road.y - 100 - (road.linH / 3))}px`);
+    ppl.draw();
   }
 
   function inProptn(nu, de) {
@@ -115,24 +97,34 @@
               : Math.ceil(Math.abs(init.h / de));
   }
 
-  function pageSign(signX) {
-    let pS = document.querySelector('.page-sign');
-    // All in future...
-    pS.style.top = signX;
-    console.log(signX);
-    pS.style.height = `${inProptn(1, 6)}px`;
-    pS.style.width = `${inProptn(0, 120)}px`;
+  let ppl = {
+    cont: document.querySelector('.ppl-cont'),
+    picker: ['julie', 'spike'],
+    chrs: new Array(6),
+    draw() {
+      for (let i = 0; i < 6; i++) {
+        this.chrs[i] = new Image(inProptn(0, 12), inProptn(1, 6));
+        this.chrs[i].src = `../img/${this.picker[i%2]}.webp`;
+        this.cont.appendChild(this.chrs[i]);
+      } },
+    no: 0
   }
 
-  // const ppl = document.querySelector('.ppl-img-cont');
+  ppl.chrs.forEach(function(el) {
+    el.addEventListener('click', function(e) {
+      no++;
+      console.log('hunge');
+    })
+  } );
+
+
+  // let pS = [document.querySelector('.page-sign-next'), document.querySelector('.page-sign-prev')];
+  // let dogear = 0;
   //
-  // for (let i = 0; i < ppl.children.length; i++) {
-  //   ppl.children[i].addEventListener('click', function() {
-  //     ppl.children[i].classList.toggle('hide');
-  //     ppl.children[i + 1].classList.toggle('hide');
+  // pS.addEventListener('click', function(e) {
+  //   dogear++;
   //
-  //   }, false);
-  // }
+  // }, false);
 
 
 }());
