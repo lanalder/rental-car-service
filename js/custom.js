@@ -1,8 +1,5 @@
 (function () {
 
-  // import anime from 'animejs/lib/anime.es.js';
-  // const anime = require('animejs');
-
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
 
@@ -17,6 +14,22 @@
       canvas.width = this.w;
       canvas.height = this.h;
     }
+  }
+
+  let ppl = {
+    cont: document.querySelector('.ppl-cont'),
+    picker: ['julie', 'spike'],
+    chrs: new Array(6),
+    draw() {
+      while (this.cont.children.length > 1) {
+        this.cont.lastChild.remove();
+      }
+      for (let i = 0; i < 6; i++) {
+        this.chrs[i] = new Image();
+        this.chrs[i].src = `../img/${this.picker[i%2]}.png`;
+        this.cont.appendChild(this.chrs[i]);
+      } },
+    no: 0
   }
 
   let road = {
@@ -58,6 +71,16 @@
     }
   }
 
+  let signs = {
+    posts: [document.querySelector('.page-sign-next'), document.querySelector('.page-sign-prev')],
+    draw(form) {
+      this.posts.forEach(x => {
+        x.style.top = `${form-inProptn(1, 6)+50}px`;
+        x.style.height = `${inProptn(1, 6)}px`;
+      } );
+    }
+  }
+
   function grass() {
     //mayb better 4 reponsiveness as canv drawImag
     let amt = inProptn(0, 50);
@@ -74,8 +97,9 @@
         soil.style.bottom = `${i * 30 - 50}px`;
         // p allg now i think for responsiveness except when enlarged heaps
       } else {
-        soil.style.top = `${road.y - 50 - (road.linH / 3)}px`;
-        console.log(soil.style.top);
+        let roadtop = road.y - 50 - (road.linH / 3);
+        soil.style.top = `${roadtop}px`;
+        signs.draw(roadtop);
       }
     }
   }
@@ -97,18 +121,7 @@
               : Math.ceil(Math.abs(init.h / de));
   }
 
-  let ppl = {
-    cont: document.querySelector('.ppl-cont'),
-    picker: ['julie', 'spike'],
-    chrs: new Array(6),
-    draw() {
-      for (let i = 0; i < 6; i++) {
-        this.chrs[i] = new Image(inProptn(0, 12), inProptn(1, 6));
-        this.chrs[i].src = `../img/${this.picker[i%2]}.webp`;
-        this.cont.appendChild(this.chrs[i]);
-      } },
-    no: 0
-  }
+
 
   ppl.chrs.forEach(function(el) {
     el.addEventListener('click', function(e) {
@@ -116,7 +129,6 @@
       console.log('hunge');
     })
   } );
-
 
   // let pS = [document.querySelector('.page-sign-next'), document.querySelector('.page-sign-prev')];
   // let dogear = 0;

@@ -7,7 +7,7 @@ var gulp = require('gulp');
   rename = require('gulp-rename');
   minifyCss = require('gulp-minify-css');
 	webpack = require('webpack-stream');
-
+	anime = require('animejs');
 
 // Server Task
 function serve (done) {
