@@ -1,5 +1,7 @@
 (function () {
 
+  const anime = require('animejs');
+
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
 
@@ -13,6 +15,7 @@
       document.body.style.height = `${this.h}px`;
       canvas.width = this.w;
       canvas.height = this.h;
+      road.draw();
     }
   }
 
@@ -21,14 +24,17 @@
     picker: ['julie', 'spike'],
     chrs: new Array(6),
     draw() {
-      while (this.cont.children.length > 1) {
+      while (this.cont.lastChild) {
         this.cont.lastChild.remove();
       }
       for (let i = 0; i < 6; i++) {
         this.chrs[i] = new Image();
         this.chrs[i].src = `../img/${this.picker[i%2]}.png`;
+        clickable(this.chrs[i]);
         this.cont.appendChild(this.chrs[i]);
-      } },
+      }
+      signs.draw();
+    },
     no: 0
   }
 
@@ -67,52 +73,96 @@
         gap = this.linW + (this.linW / 1.5);
         // not simply gap+= this.linW since don't wanna move it along exponentially, gap isn't simply x coord but the offset 4 x
       }
-      grass();
+      grass.draw();
+    }
+  }
+
+  let grass = {
+    amt: inProptn(0, 50),
+    get lawnmower() {
+      return Array.from(document.querySelector('.grass-cont').children); },
+    draw() {
+      this.lawnmower.forEach(x => {
+        while (x.lastChild) {
+          x.lastChild.remove();
+      } });
+      for (let i = 0; i < 4; i++) {
+        let roots = [];
+        let soil = document.querySelector(`.grass${i}`);
+        soil.style.width = `${this.amt * init.w}px`;
+        for (let j = 0; j < this.amt; j++) {
+          roots[j] = new Image(50, 50);
+          roots[j].src = '../img/grs.png';
+          soil.appendChild(roots[j]);
+        }
+        if (i < 3) {
+          soil.style.bottom = `${i * 30 - 50}px`;
+        } else {
+          soil.style.top = `${road.y - 50 - (road.linH / 3)}px`;
+        }
+      }
+      ppl.draw();
     }
   }
 
   let signs = {
-    posts: [document.querySelector('.page-sign-next'), document.querySelector('.page-sign-prev')],
-    draw(form) {
-      this.posts.forEach(x => {
-        x.style.top = `${form-inProptn(1, 6)+50}px`;
-        x.style.height = `${inProptn(1, 6)}px`;
-      } );
+    page: 0,
+    pS: [document.querySelector('.page-sign-next'), document.querySelector('.page-sign-prev')],
+    // height is not responsive atm!!
+    yPos: (road.y - (road.linH / 3) * 1.5)-inProptn(1, 6),
+    draw() {
+      ctx.fillStyle = '#cdc597';
+      // eek this is just, ratios of screen w/h etc., x has init.w - etc for right, y is top of curbs from road - this h
+      ctx.fillRect(init.w - inProptn(0, 21), this.yPos, inProptn(0, 150), inProptn(1, 6));
+      this.pS[0].style.top = `${this.yPos - this.pS[0].clientHeight}px`;
+      this.pS[0].style.left = `${init.w - inProptn(0, 21) - this.pS[0].clientWidth}px`;
+      car.position();
     }
   }
 
-  function grass() {
-    //mayb better 4 reponsiveness as canv drawImag
-    let amt = inProptn(0, 50);
-    for (let i = 0; i < 4; i++) {
-      let roots = [];
-      let soil = document.querySelector(`.grass${i}`);
-      soil.style.width = `${amt * init.w}px`;
-      for (let j = 0; j < amt; j++) {
-        roots[j] = new Image(50, 50);
-        roots[j].src = '../img/grs.png';
-        soil.appendChild(roots[j]);
-      }
-      if (i < 3) {
-        soil.style.bottom = `${i * 30 - 50}px`;
-        // p allg now i think for responsiveness except when enlarged heaps
-      } else {
-        let roadtop = road.y - 50 - (road.linH / 3);
-        soil.style.top = `${roadtop}px`;
-        signs.draw(roadtop);
-      }
+  let car = {
+    thingItself: document.querySelector('.car'),
+    position() {
+      this.thingItself.style.bottom = `${inProptn(1, 18)}px`;
     }
   }
+
+  // function grass() {
+  //   let amt = inProptn(0, 50);
+  //   // cleanup 4 responsiveness
+  //   let lawnmower = Array.from(document.querySelector('.grass-cont').children);
+  //   lawnmower.forEach(x => {
+  //     while (x.lastChild) {
+  //       x.lastChild.remove();
+  //     }
+  //   } );
+  //   // acc drawing
+  //   for (let i = 0; i < 4; i++) {
+  //     let roots = [];
+  //     let soil = document.querySelector(`.grass${i}`);
+  //     soil.style.width = `${amt * init.w}px`;
+  //     for (let j = 0; j < amt; j++) {
+  //       roots[j] = new Image(50, 50);
+  //       roots[j].src = '../img/grs.png';
+  //       soil.appendChild(roots[j]);
+  //     }
+  //     console.log(roots);
+  //     if (i < 3) {
+  //       soil.style.bottom = `${i * 30 - 50}px`;
+  //     } else {
+  //       soil.style.top = `${road.y - 50 - (road.linH / 3)}px`;
+  //     }
+  //   }
+  // }
 
   'load resize'.split(' ').forEach(function(e) {
     // rescale things on both page load n resize
-    window.addEventListener(e, draw2suit, false);
+    window.addEventListener(e, tailor, false);
   })
 
-  function draw2suit() {
+  function tailor() {
+    // interesting that canvas doesn't get drawn when this method called as func on above ev listener...
     init.setScl();
-    road.draw();
-    ppl.draw();
   }
 
   function inProptn(nu, de) {
@@ -121,22 +171,45 @@
               : Math.ceil(Math.abs(init.h / de));
   }
 
-
-
-  ppl.chrs.forEach(function(el) {
-    el.addEventListener('click', function(e) {
-      no++;
-      console.log('hunge');
+  function clickable(el) {
+    el.addEventListener('click', function() {
+      if (el.src.includes('inblack')) {
+        ppl.no--;
+        document.querySelector('.ppl-no').textContent = `${ppl.no}`;
+        // lucky that the names r the same length! or could think of a more flexible n less messy method
+        el.src = el.attributes[0].textContent.substring(0, 12) + el.attributes[0].textContent.substring(19);
+      } else if (el.src.includes('julie')) {
+        ppl.no++;
+        document.querySelector('.ppl-no').textContent = `${ppl.no}`;
+        el.src = '../img/julieinblack.png';
+      } else {
+        ppl.no++
+        document.querySelector('.ppl-no').textContent = `${ppl.no}`;
+        el.src = '../img/spikeinblack.png';
+      }
     })
-  } );
+  }
 
-  // let pS = [document.querySelector('.page-sign-next'), document.querySelector('.page-sign-prev')];
-  // let dogear = 0;
-  //
-  // pS.addEventListener('click', function(e) {
-  //   dogear++;
-  //
-  // }, false);
+  signs.pS[0].addEventListener('click', function(e) {
+    signs.page++;
+    animate();
+  })
 
+  function animate() {
+    anime({
+      targets: car.thingItself,
+      translateX: 500,
+      delay: anime.stagger(1000),
+      easing: 'easeOutExpo',
+      duration: 1750
+    });
+    anime({
+      targets: document.querySelector('.inp-el'),
+      translateX: -700,
+      delay: anime.stagger(1000),
+      easing: 'easeOutExpo',
+      duration: 1750
+    });
+  }
 
 }());

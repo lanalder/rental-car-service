@@ -7,7 +7,6 @@ var gulp = require('gulp');
   rename = require('gulp-rename');
   minifyCss = require('gulp-minify-css');
 	webpack = require('webpack-stream');
-	anime = require('animejs');
 
 // Server Task
 function serve (done) {
@@ -59,9 +58,9 @@ function webpack (done) {
 		return gulp.src('js/custom.js')
 				.pipe(webpack())
 				.pipe(rename('bundle.js'))
-				.pipe(gulp.dest('js/custom.js'))
+				.pipe(gulp.dest('js'))
 				.pipe(browserSync.stream());
-});
+};
 
 // Tasks that Gulp will run
 gulp.task('default', gulp.series(serve, watch, lint, html, styles, webpack));

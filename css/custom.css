@@ -13,6 +13,12 @@ body {
   margin: 20vh 20vw 20vh 20vw;
 }
 
+.ppl-no {
+  float: right;
+  margin-right: 3vw !important;
+  margin-top: 3vh !important;
+}
+
 .hide {
   display: none;
 }
@@ -23,6 +29,9 @@ body {
 
 .page-sign-cont > div {
   position: absolute;
-  background-color: #a9afad;
-  z-index: -1;
+  padding: 0.3vh !important;
+}
+
+.car {
+  position: absolute;
 }
