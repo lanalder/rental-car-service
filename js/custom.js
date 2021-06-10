@@ -1,6 +1,7 @@
 (function () {
 
   const anime = require('animejs');
+  const picker = require('js-datepicker');
 
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
@@ -162,26 +163,30 @@
     });
   }
 
+  // let date = {
+    // pickme: datepicker(document.querySelector('.datep-cont')),
+  // };
+
   signs.pS[0].addEventListener('click', function(e) {
     signs.page++;
-    animate();
+    // animate();
   });
 
-  function animate() {
-    anime({
-      targets: car.thingItself,
-      translateX: 500,
-      delay: anime.stagger(1000),
-      easing: 'easeOutExpo',
-      duration: 1750
-    });
-    anime({
-      targets: document.querySelector('.inp-el'),
-      translateX: -700,
-      delay: anime.stagger(1000),
-      easing: 'easeOutExpo',
-      duration: 1750
-    });
-  }
+  // function animate() {
+  //   let f = anime({
+  //     targets: car.thingItself,
+  //     translateX: 500,
+  //     // delay: anime.stagger(1000),
+  //     easing: 'easeOutExpo',
+  //     duration: 1750
+  //   });
+    // anime({
+    //   targets: document.querySelector('.inp-el'),
+    //   translateX: -700,
+    //   // delay: anime.stagger(1000),
+    //   easing: 'easeOutExpo',
+    //   duration: 1750
+    // });
+  // }
 
 }());

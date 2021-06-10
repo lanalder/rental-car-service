@@ -19,15 +19,15 @@ function serve (done) {
 };
 
 // Styles Task
-// function styles (done) {
-//     gulp.src('sass/custom.scss')
-//         .pipe(sass({outputStyle: 'compressed'}).on('error', sass.logError))
-//         .pipe(rename({suffix: '.min'}))
-//         .pipe(minifyCss())
-//         .pipe(gulp.dest('css/'))
-//         .pipe(connect.reload());
-// 				done();
-// };
+function styles (done) {
+    gulp.src('sass/custom.scss')
+        .pipe(sass({outputStyle: 'compressed'}).on('error', sass.logError))
+        .pipe(rename({suffix: '.min'}))
+        .pipe(minifyCss())
+        .pipe(gulp.dest('css/'))
+        .pipe(connect.reload());
+				done();
+};
 
 // HTML Task
 function html (done) {
@@ -48,7 +48,7 @@ function lint (done) {
 
 // Watch task to watch for file changes
 function watch (done) {
-	// gulp.watch('sass/**/*.scss', gulp.series(styles));
+	gulp.watch('sass/**/*.scss', gulp.series(styles));
 	gulp.watch('./*.html', gulp.series(html));
 	gulp.watch('js/*.js', gulp.series(lint));
 	done();
@@ -57,7 +57,7 @@ function watch (done) {
 // For all webpack work for modules and imports/require
 function wp (done) {
 	gulp.src('js/custom.js')
-	.pipe(webpack({'mode': 'development'}))
+	.pipe(webpack())
 	// what could possibly b the diff between dev and production? what does this do other than prevent a warning message
 	.pipe(rename('bundle.js'))
 	.pipe(gulp.dest('js'));
@@ -74,5 +74,5 @@ function wp (done) {
 // };
 
 // Tasks that Gulp will run
-gulp.task('default', gulp.series(serve, watch, lint, html, wp));
+gulp.task('default', gulp.series(serve, watch, lint, html, styles, wp));
 // dont 4get to add back in styles when acc do sass

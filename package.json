@@ -23,6 +23,7 @@
   "license": "ISC",
   "dependencies": {
     "animejs": "^3.2.1",
+    "js-datepicker": "^5.18.0",
     "webpack": "^5.38.1"
   }
 }

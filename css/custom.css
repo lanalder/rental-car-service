@@ -1,3 +1,5 @@
+@import '../node_modules/js-datepicker/dist/datepicker.min.css';
+
 body {
   overflow: hidden;
   margin: 0px;
@@ -14,9 +16,13 @@ body {
 }
 
 .ppl-no {
-  float: right;
   margin-right: 3vw !important;
   margin-top: 3vh !important;
+}
+
+.datep-cont {
+  height: 100px;
+  width: 100px;
 }
 
 .hide {
