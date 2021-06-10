@@ -8,8 +8,8 @@
   ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
   let init = {
-    get w() { return window.innerWidth },
-    get h() { return window.innerHeight },
+    get w() { return window.innerWidth; },
+    get h() { return window.innerHeight; },
     setScl() {
       document.body.style.width = `${this.w}px`;
       document.body.style.height = `${this.h}px`;
@@ -17,7 +17,7 @@
       canvas.height = this.h;
       road.draw();
     }
-  }
+  };
 
   let ppl = {
     cont: document.querySelector('.ppl-cont'),
@@ -36,14 +36,14 @@
       signs.draw();
     },
     no: 0
-  }
+  };
 
   let road = {
     h: inProptn(1, 6),
-    get y() { return init.h - this.h * 1.5 },
+    get y() { return init.h - this.h * 1.5; },
     // for lines... new fav pattern ig isget (n 3s today) nice 2 kno what ur up to tho instead of giganturan expressions (statements??) n mostly here bc objs suck at self-awareness (no self-ref this)
-    get linY() { return this.y + (this.h / 3) },
-    get linH() { return this.h / 9 },
+    get linY() { return this.y + (this.h / 3); },
+    get linH() { return this.h / 9; },
     linW: inProptn(0, 9),
     draw() {
       // curbs 1st easiest 2 just have behind
@@ -73,43 +73,15 @@
         gap = this.linW + (this.linW / 1.5);
         // not simply gap+= this.linW since don't wanna move it along exponentially, gap isn't simply x coord but the offset 4 x
       }
-      grass.draw();
-    }
-  }
-
-  let grass = {
-    amt: inProptn(0, 50),
-    get lawnmower() {
-      return Array.from(document.querySelector('.grass-cont').children); },
-    draw() {
-      this.lawnmower.forEach(x => {
-        while (x.lastChild) {
-          x.lastChild.remove();
-      } });
-      for (let i = 0; i < 4; i++) {
-        let roots = [];
-        let soil = document.querySelector(`.grass${i}`);
-        soil.style.width = `${this.amt * init.w}px`;
-        for (let j = 0; j < this.amt; j++) {
-          roots[j] = new Image(50, 50);
-          roots[j].src = '../img/grs.png';
-          soil.appendChild(roots[j]);
-        }
-        if (i < 3) {
-          soil.style.bottom = `${i * 30 - 50}px`;
-        } else {
-          soil.style.top = `${road.y - 50 - (road.linH / 3)}px`;
-        }
-      }
       ppl.draw();
     }
-  }
+  };
 
   let signs = {
     page: 0,
     pS: [document.querySelector('.page-sign-next'), document.querySelector('.page-sign-prev')],
     // height is not responsive atm!!
-    yPos: (road.y - (road.linH / 3) * 1.5)-inProptn(1, 6),
+    get yPos() { return (road.y - (road.linH / 3) * 1.5)-inProptn(1, 6); },
     draw() {
       ctx.fillStyle = '#cdc597';
       // eek this is just, ratios of screen w/h etc., x has init.w - etc for right, y is top of curbs from road - this h
@@ -118,51 +90,51 @@
       this.pS[0].style.left = `${init.w - inProptn(0, 21) - this.pS[0].clientWidth}px`;
       car.position();
     }
-  }
+  };
 
   let car = {
     thingItself: document.querySelector('.car'),
     position() {
       this.thingItself.style.bottom = `${inProptn(1, 18)}px`;
     }
-  }
+  };
 
-  // function grass() {
-  //   let amt = inProptn(0, 50);
-  //   // cleanup 4 responsiveness
-  //   let lawnmower = Array.from(document.querySelector('.grass-cont').children);
-  //   lawnmower.forEach(x => {
-  //     while (x.lastChild) {
-  //       x.lastChild.remove();
-  //     }
-  //   } );
-  //   // acc drawing
-  //   for (let i = 0; i < 4; i++) {
-  //     let roots = [];
-  //     let soil = document.querySelector(`.grass${i}`);
-  //     soil.style.width = `${amt * init.w}px`;
-  //     for (let j = 0; j < amt; j++) {
-  //       roots[j] = new Image(50, 50);
-  //       roots[j].src = '../img/grs.png';
-  //       soil.appendChild(roots[j]);
-  //     }
-  //     console.log(roots);
-  //     if (i < 3) {
-  //       soil.style.bottom = `${i * 30 - 50}px`;
-  //     } else {
-  //       soil.style.top = `${road.y - 50 - (road.linH / 3)}px`;
-  //     }
-  //   }
-  // }
+  function grass() {
+    let amt = inProptn(0, 50);
+    // cleanup 4 responsiveness
+    let lawnmower = Array.from(document.querySelector('.grass-cont').children);
+    lawnmower.forEach(x => {
+      while (x.lastChild) {
+        x.lastChild.remove();
+      }
+    } );
+    // acc drawing
+    for (let i = 0; i < 4; i++) {
+      let roots = [];
+      let soil = document.querySelector(`.grass${i}`);
+      soil.style.width = `${amt * init.w}px`;
+      for (let j = 0; j < amt; j++) {
+        roots[j] = new Image(50, 50);
+        roots[j].src = '../img/grs.png';
+        soil.appendChild(roots[j]);
+      }
+      if (i < 3) {
+        soil.style.bottom = `${i * 30 - 50}px`;
+      } else {
+        soil.style.top = `${road.y - 50 - (road.linH / 3)}px`;
+      }
+    }
+  }
 
   'load resize'.split(' ').forEach(function(e) {
     // rescale things on both page load n resize
     window.addEventListener(e, tailor, false);
-  })
+  });
 
   function tailor() {
     // interesting that canvas doesn't get drawn when this method called as func on above ev listener...
     init.setScl();
+    grass();
   }
 
   function inProptn(nu, de) {
@@ -183,17 +155,17 @@
         document.querySelector('.ppl-no').textContent = `${ppl.no}`;
         el.src = '../img/julieinblack.png';
       } else {
-        ppl.no++
+        ppl.no++;
         document.querySelector('.ppl-no').textContent = `${ppl.no}`;
         el.src = '../img/spikeinblack.png';
       }
-    })
+    });
   }
 
   signs.pS[0].addEventListener('click', function(e) {
     signs.page++;
     animate();
-  })
+  });
 
   function animate() {
     anime({
