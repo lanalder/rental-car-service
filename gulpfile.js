@@ -57,7 +57,7 @@ function watch (done) {
 // For all webpack work for modules and imports/require
 function wp (done) {
 	gulp.src('js/custom.js')
-	.pipe(webpack())
+	.pipe(webpack({ watch: true }))
 	// what could possibly b the diff between dev and production? what does this do other than prevent a warning message
 	.pipe(rename('bundle.js'))
 	.pipe(gulp.dest('js'));

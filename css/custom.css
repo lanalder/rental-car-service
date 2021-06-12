@@ -3,11 +3,18 @@
 body {
   overflow: hidden;
   margin: 0px;
+  background-image: url('../img/bg.jpg');
+  background-size: cover;
 }
 
 #canvas {
   position: absolute;
   z-index: -100;
+}
+
+.inp-cont {
+  display: flex;
+  flex-direction: row;
 }
 
 .ppl {
@@ -16,14 +23,19 @@ body {
 }
 
 .ppl-no {
-  margin-right: 3vw !important;
-  margin-top: 3vh !important;
+  float: right;
+  height: 20px;
+  /* margin-bottom: 5vh !important; */
+  /* position: absolute; */
+
+  /* margin-right: 3vw !important;
+  margin-top: 3vh !important; */
 }
 
-.datep-cont {
+/* .datep {
   height: 100px;
   width: 100px;
-}
+} */
 
 .hide {
   display: none;

@@ -1,7 +1,8 @@
 (function () {
 
-  const anime = require('animejs');
-  const picker = require('js-datepicker');
+  const datepicker = require('js-datepicker');
+  const anime = require('animejs/lib/anime.js');
+  // whyyyy did anime need the extra path shit?? datepick was fine w/o it
 
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
@@ -46,6 +47,7 @@
     get linY() { return this.y + (this.h / 3); },
     get linH() { return this.h / 9; },
     linW: inProptn(0, 9),
+    gaplog: [new Array(2)],
     draw() {
       // curbs 1st easiest 2 just have behind
       let shades = ['#9ca297', '#b1bab0'];
@@ -60,20 +62,26 @@
       // road itself
       ctx.fillStyle = 'black';
       ctx.fillRect(0, this.y, init.w, this.h);
+      // this.markings(0);
+    },
+    markings(mvm) {
       // road markings
       let gap = this.linW / 3;
+      this.gaplog[0] = gap;
       for (let i = 0; i < 18; i++) {
+        // gotta (or dont gotta but its the lazy way) make sm lines 4 responsiveness, the devil
         ctx.beginPath();
         ctx.fillStyle = 'white';
-        ctx.moveTo(gap * i + 6, this.linY);
-        ctx.lineTo(gap * i + 3 + this.linW, this.linY);
-        ctx.lineTo(gap * i + this.linW, this.linY + this.linH);
-        ctx.lineTo(gap * i + 1.5, this.linY + this.linH);
+        ctx.moveTo(gap * i + 6 - mvm, this.linY);
+        ctx.lineTo(gap * i + 3 + this.linW - mvm, this.linY);
+        ctx.lineTo(gap * i + this.linW - mvm, this.linY + this.linH);
+        ctx.lineTo(gap * i + 1.5 - mvm, this.linY + this.linH);
         ctx.closePath();
         ctx.fill();
         gap = this.linW + (this.linW / 1.5);
-        // not simply gap+= this.linW since don't wanna move it along exponentially, gap isn't simply x coord but the offset 4 x
+        // not simply gap+= this.linW since don't wanna move it along exponentially, gap isn't simply x coord but the offset 4 x (rly only needs 2 be calcd once, but objs get weird if i try set gap vals stored in markStrg at beginning, idk seems some limit 2 self-reference - it sets it as the func and not the returned val)
       }
+      this.gaplog[1] = gap;
       ppl.draw();
     }
   };
@@ -100,32 +108,31 @@
     }
   };
 
-  function grass() {
-    let amt = inProptn(0, 50);
-    // cleanup 4 responsiveness
-    let lawnmower = Array.from(document.querySelector('.grass-cont').children);
-    lawnmower.forEach(x => {
-      while (x.lastChild) {
-        x.lastChild.remove();
+  let grass = {
+    amt: inProptn(0, 50),
+    roots: new Array(this.amt),
+    soil: new Array(4),
+    get lawnmower() { Array.from(document.querySelector('.grass-cont').children); },
+    draw() {
+      if (this.lawnmower) {
+        this.lawnmower.forEach(x => {
+          while (x.lastChild) {
+            x.lastChild.remove();
+          }
+        } ); }
+      for (let i = 0; i < 4; i++) {
+        this.soil[i] = document.querySelector(`.grass${i}`);
+        this.soil[i].style.width = `${this.amt * init.w}px`;
+        for (let j = 0; j < this.amt; j++) {
+          this.roots[j] = new Image(50, 50);
+          this.roots[j].src = '../img/grs.png';
+          this.soil[i].appendChild(this.roots[j]);
+        }
       }
-    } );
-    // acc drawing
-    for (let i = 0; i < 4; i++) {
-      let roots = [];
-      let soil = document.querySelector(`.grass${i}`);
-      soil.style.width = `${amt * init.w}px`;
-      for (let j = 0; j < amt; j++) {
-        roots[j] = new Image(50, 50);
-        roots[j].src = '../img/grs.png';
-        soil.appendChild(roots[j]);
-      }
-      if (i < 3) {
-        soil.style.bottom = `${i * 30 - 50}px`;
-      } else {
-        soil.style.top = `${road.y - 50 - (road.linH / 3)}px`;
-      }
+      this.soil.forEach( x => { x.style.bottom = `${this.soil.indexOf(x) * 30 - 50}px`; } );
+      this.soil[3].style.top = `${road.y - 50 - (road.linH / 3)}px`;
     }
-  }
+  };
 
   'load resize'.split(' ').forEach(function(e) {
     // rescale things on both page load n resize
@@ -135,7 +142,8 @@
   function tailor() {
     // interesting that canvas doesn't get drawn when this method called as func on above ev listener...
     init.setScl();
-    grass();
+    road.markings(0);
+    grass.draw();
   }
 
   function inProptn(nu, de) {
@@ -163,30 +171,65 @@
     });
   }
 
+  // const pickme = datepicker(document.querySelector('.datep'), {
+  //   id: 1,
+  //   // defaultView: 'overlay',
+  //   alwaysShow: true
+  // });
+
+  // const
+
   // let date = {
     // pickme: datepicker(document.querySelector('.datep-cont')),
   // };
 
   signs.pS[0].addEventListener('click', function(e) {
     signs.page++;
-    // animate();
+
+    animate();
   });
 
-  // function animate() {
-  //   let f = anime({
-  //     targets: car.thingItself,
-  //     translateX: 500,
-  //     // delay: anime.stagger(1000),
-  //     easing: 'easeOutExpo',
-  //     duration: 1750
-  //   });
-    // anime({
-    //   targets: document.querySelector('.inp-el'),
-    //   translateX: -700,
-    //   // delay: anime.stagger(1000),
-    //   easing: 'easeOutExpo',
-    //   duration: 1750
-    // });
-  // }
+  function animate() {
+    anime({
+      targets: car.thingItself,
+      translateX: 300,
+      delay: anime.stagger(1000),
+      easing: 'easeOutExpo',
+      duration: 1750
+    });
+    anime({
+      targets: document.querySelector('.inp-el'),
+      translateX: -700,
+      easing: 'easeOutExpo',
+      duration: 1750
+    });
+    aniGrass();
+    let an = 0;
+    while (an < 500) {
+      aniRoad();
+      an++;
+    }
+  }
+
+  let f = 0;
+
+  function aniRoad() {
+    setTimeout(function() {
+      road.draw();
+      road.markings(2 + f);
+      f++;
+    }, 100);
+  }
+
+  function aniGrass() {
+    let lawn = document.querySelector('.grass-cont');
+    grass.draw();
+    anime({
+      targets: grass.soil,
+      translateX: -500,
+      easing: 'easeOutExpo',
+      duration: 2750
+    });
+  }
 
 }());
