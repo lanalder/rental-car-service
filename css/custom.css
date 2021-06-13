@@ -41,6 +41,10 @@ body {
   display: none;
 }
 
+.mini {
+  float: right;
+}
+
 .grass-cont > div {
   position: absolute;
 }
