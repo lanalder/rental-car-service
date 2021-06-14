@@ -10,6 +10,8 @@ import Litepicker from 'litepicker';
 
   ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
+  var inpBits = Array.from(document.querySelectorAll('.inp-el'));
+
   let init = {
     get w() { return window.innerWidth; },
     get h() { return window.innerHeight; },
@@ -106,7 +108,8 @@ import Litepicker from 'litepicker';
   let car = {
     thingItself: document.querySelector('.car'),
     position() {
-      this.thingItself.style.bottom = `${inProptn(1, 20)}px`;
+      this.thingItself.style.bottom = `${inProptn(1, 33)}px`;
+      // this! is properly not reponsive
     }
   };
 
@@ -173,41 +176,25 @@ import Litepicker from 'litepicker';
     });
   }
 
-  // const pickme = datepicker(document.querySelector('.datep'), {
-  //   id: 1,
-  //   defaultView: 'overlay',
-  //   alwaysShow: true
-  // });
-
-  // const
-
-  // let date = {
-    // pickme: datepicker(document.querySelector('.datep-cont')),
-  // };
-
-  signs.pS[0].addEventListener('click', function(e) {
-    signs.page++;
-
-    animate();
-  });
+  signs.pS[0].addEventListener('click', animate, false);
 
   function animate() {
     anime({
       targets: car.thingItself,
-      translateX: 300,
-      delay: anime.stagger(1000),
+      translateX: 80,
+      // delay: anime.stagger(1000),
       easing: 'easeOutExpo',
-      duration: 1750
+      duration: 3000
     });
     anime({
-      targets: document.querySelector('.inp-el'),
+      targets: [inpBits[signs.page], inpBits[signs.page + 1]],
       translateX: -700,
-      easing: 'easeOutExpo',
-      duration: 1750
+      easing: 'easeOutQuad',
+      duration: 1500
     });
     anime({
       targets: road,
-      animark: 500,
+      animark: 800,
       round: 1,
       easing: 'easeOutExpo',
       duration: 2750,
@@ -217,6 +204,7 @@ import Litepicker from 'litepicker';
       }
     });
     aniGrass();
+    signs.page++;
   }
 
   function aniGrass() {
@@ -225,48 +213,27 @@ import Litepicker from 'litepicker';
     grass.draw();
     anime({
       targets: grass.soil,
-      translateX: -500,
+      translateX: -800,
       easing: 'easeOutExpo',
       duration: 2750
     });
   }
 
   let date = {
-    days: document.querySelector('.date'),
+    outer: document.querySelector('.date'),
     picker: null,
     init() {
       this.picker =  new Litepicker({
-        element: this.days,
+        element: this.outer,
         startDate: new Date(),
+        inlineMode: true,
         autoRefresh: true
       });
+      this.picker.ui.classList.add('block', 'inline');
+      document.querySelector('.date-cont').style.left = `${init.w}px`;
     }
   };
 
   date.init();
-  console.log(new Date(), Date.now() / ((86400000*365)/50));
-
-  // picker({
-  //   element: date.days
-  // });
-
-  // const picker = new Litepicker({
-  //   // element: date.days,
-  //   element: document.querySelector('.date'),
-  //   inlineMode: false,
-  //   startDate: new Date()
-  // });
-
-  // function dateCollect() {
-  //   date.days.forEach(x => {
-  //     x.addEventListener('click', function(e) {
-  //       console.log(e);
-  //       console.dir(date);
-  //     }, false);
-  //   });
-  // }
-
-  // console.dir(document.querySelector('.date-s'));
-  // dateCollect();
 
 }());

@@ -37,16 +37,16 @@ body {
 
 .date-cont {
   display: flex;
+  margin: 15vh 20vw 25vh 20vw;
   flex-direction: column;
+  text-align: center;
 }
 
-/* .date {
-  width: 100px;
-  height: 100px;
-} */
 
 .litepicker {
   display: block !important;
+  margin-top: 5px !important;
+  /* margin: 5px 5px 5px 5px !important; */
 }
 
 .hide {
