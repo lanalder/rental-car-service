@@ -1,4 +1,4 @@
-@import '../node_modules/js-datepicker/dist/datepicker.min.css';
+@import '../node_modules/litepicker/dist/css/litepicker.css';
 
 body {
   overflow: hidden;
@@ -20,6 +20,9 @@ body {
 .ppl {
   position: absolute;
   margin: 20vh 20vw 20vh 20vw;
+  /* top: 30%;
+  left: 50%;
+  transform: translate(-50%, -30%); */
 }
 
 .ppl-no {
@@ -32,10 +35,19 @@ body {
   margin-top: 3vh !important; */
 }
 
-/* .datep {
-  height: 100px;
+.date-cont {
+  display: flex;
+  flex-direction: column;
+}
+
+/* .date {
   width: 100px;
+  height: 100px;
 } */
+
+.litepicker {
+  display: block !important;
+}
 
 .hide {
   display: none;

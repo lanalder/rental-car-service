@@ -1,8 +1,9 @@
+import Litepicker from 'litepicker';
+// import needs to be outside iffe wrapper, otherwise throws undefined errors; i think this is because es6 modules are pre-parsed instead of commonjs (require) being called on demand, meaning that when first read the objs requiring litepicker are not yet defined... obvs out here litepicker-depending objs are still not defined, though they are within an as of yet anon func, so it must be able to access necessary values as returns once wrapper iffe is called, whereas if they were in the same global scope, the module isn't gonna wait for returns but expects those values there from the start
+
 (function () {
 
-  const datepicker = require('js-datepicker');
   const anime = require('animejs/lib/anime.js');
-  // whyyyy did anime need the extra path shit?? datepick was fine w/o it
 
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
@@ -48,6 +49,7 @@
     get linH() { return this.h / 9; },
     linW: inProptn(0, 9),
     gaplog: [new Array(2)],
+    animark: 0,
     draw() {
       // curbs 1st easiest 2 just have behind
       let shades = ['#9ca297', '#b1bab0'];
@@ -64,7 +66,7 @@
       ctx.fillRect(0, this.y, init.w, this.h);
       // this.markings(0);
     },
-    markings(mvm) {
+    markings() {
       // road markings
       let gap = this.linW / 3;
       this.gaplog[0] = gap;
@@ -72,10 +74,10 @@
         // gotta (or dont gotta but its the lazy way) make sm lines 4 responsiveness, the devil
         ctx.beginPath();
         ctx.fillStyle = 'white';
-        ctx.moveTo(gap * i + 6 - mvm, this.linY);
-        ctx.lineTo(gap * i + 3 + this.linW - mvm, this.linY);
-        ctx.lineTo(gap * i + this.linW - mvm, this.linY + this.linH);
-        ctx.lineTo(gap * i + 1.5 - mvm, this.linY + this.linH);
+        ctx.moveTo(gap * i + 6 - this.animark, this.linY);
+        ctx.lineTo(gap * i + 3 + this.linW - this.animark, this.linY);
+        ctx.lineTo(gap * i + this.linW - this.animark, this.linY + this.linH);
+        ctx.lineTo(gap * i + 1.5 - this.animark, this.linY + this.linH);
         ctx.closePath();
         ctx.fill();
         gap = this.linW + (this.linW / 1.5);
@@ -104,13 +106,13 @@
   let car = {
     thingItself: document.querySelector('.car'),
     position() {
-      this.thingItself.style.bottom = `${inProptn(1, 18)}px`;
+      this.thingItself.style.bottom = `${inProptn(1, 20)}px`;
     }
   };
 
   let grass = {
     amt: inProptn(0, 50),
-    roots: new Array(this.amt),
+    roots: new Array(inProptn(0, 50)),
     soil: new Array(4),
     get lawnmower() { Array.from(document.querySelector('.grass-cont').children); },
     draw() {
@@ -142,7 +144,7 @@
   function tailor() {
     // interesting that canvas doesn't get drawn when this method called as func on above ev listener...
     init.setScl();
-    road.markings(0);
+    road.markings();
     grass.draw();
   }
 
@@ -173,7 +175,7 @@
 
   // const pickme = datepicker(document.querySelector('.datep'), {
   //   id: 1,
-  //   // defaultView: 'overlay',
+  //   defaultView: 'overlay',
   //   alwaysShow: true
   // });
 
@@ -203,25 +205,22 @@
       easing: 'easeOutExpo',
       duration: 1750
     });
+    anime({
+      targets: road,
+      animark: 500,
+      round: 1,
+      easing: 'easeOutExpo',
+      duration: 2750,
+      update: function() {
+        road.draw();
+        road.markings();
+      }
+    });
     aniGrass();
-    let an = 0;
-    while (an < 500) {
-      aniRoad();
-      an++;
-    }
-  }
-
-  let f = 0;
-
-  function aniRoad() {
-    setTimeout(function() {
-      road.draw();
-      road.markings(2 + f);
-      f++;
-    }, 100);
   }
 
   function aniGrass() {
+    // could follow pattern as in aniroad if more elegant, rn cbf
     let lawn = document.querySelector('.grass-cont');
     grass.draw();
     anime({
@@ -231,5 +230,43 @@
       duration: 2750
     });
   }
+
+  let date = {
+    days: document.querySelector('.date'),
+    picker: null,
+    init() {
+      this.picker =  new Litepicker({
+        element: this.days,
+        startDate: new Date(),
+        autoRefresh: true
+      });
+    }
+  };
+
+  date.init();
+  console.log(new Date(), Date.now() / ((86400000*365)/50));
+
+  // picker({
+  //   element: date.days
+  // });
+
+  // const picker = new Litepicker({
+  //   // element: date.days,
+  //   element: document.querySelector('.date'),
+  //   inlineMode: false,
+  //   startDate: new Date()
+  // });
+
+  // function dateCollect() {
+  //   date.days.forEach(x => {
+  //     x.addEventListener('click', function(e) {
+  //       console.log(e);
+  //       console.dir(date);
+  //     }, false);
+  //   });
+  // }
+
+  // console.dir(document.querySelector('.date-s'));
+  // dateCollect();
 
 }());
