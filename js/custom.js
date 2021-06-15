@@ -137,8 +137,11 @@ import Litepicker from 'litepicker';
   };
 
   let grass = {
-    amt: inProptn(0, 50),
+    // amt: inProptn(0, 50),
     // each grass img is 50x50 so the amt needed 2 fill up screen is w/50
+    get amt() {
+      return carpark.exists ? inProptn(0, 110) : inProptn(0, 50); },
+
     roots: new Array(inProptn(0, 50)),
     // for holding each img
     soil: new Array(4),
@@ -147,6 +150,8 @@ import Litepicker from 'litepicker';
     get lawnmower() {
       Array.from(document.querySelector('.grass-cont').children); },
       // mad weird that return here doesn't update array
+      // this is just so when animated old grass can b cleared n then repositioned; not just using roots bc that only holds imgs for one line at a time... ig values get set back 2 null after loop in draw? not rly sure, can't rly remember if i cleared it somewhere or what
+      // these arrs rly need 2 be looked at, i swear some are redundant but idkk
 
     draw() {
       if (this.lawnmower) {
@@ -181,10 +186,14 @@ import Litepicker from 'litepicker';
     // interesting that canvas doesn't get drawn when this method called as func on above ev listener...
     init.setScl();
     road.markings();
+    carpark.init();
+
+    // Object.defineProperty(this, 'exists', {value: 1, writable: true});
+
     grass.draw();
     date.init();
     // geo.init();
-    carpark.init();
+    // carpark.exists = 1;
   }
 
   function inProptn(nu, de) {
@@ -322,17 +331,25 @@ import Litepicker from 'litepicker';
     init() {
       ctx.beginPath();
       ctx.fillStyle = 'black';
-      ctx.moveTo(init.w / 2, init.h);
-      ctx.lineTo(init.w / 2 + init.w / 5, init.h / 2);
+      ctx.moveTo(inProptn(0, 2), init.h);
+      ctx.bezierCurveTo(init.w / 2, init.h, init.w / 2 + init.w / 27, init.h / 2 + init.h / 6, init.w / 2 + init.w / 5, init.h / 2);
+      // annoying that this method can't take more than one return from inProptn
       ctx.lineTo(init.w, init.h / 2);
       ctx.lineTo(init.w, init.h);
       ctx.closePath();
       ctx.fill();
 
-      console.log(grass.lawnmower);
+      Object.defineProperty(this, 'exists', {value: 1, writable: true});
+      // this is to let other objs know that there's a carpark in the way of where they wanna go
+
+      // i cannot BElieve setting vals to props within prop funcs doesn't change outer val ig it makes sense but like funcs should b able 2 change more global vars than themselves?? is this what;s happening w grass arrs?
+
+      // curbs n stuff
+
     }
   };
 
+  console.dir(carpark);
 
 
   // mapboxgl.accessToken = 'pk.eyJ1IjoibGFuYWxkZXIiLCJhIjoiY2tweGlqd2RmMWVyajJ2b2lrejYzbDZ5diJ9.ELtetZkKKBOunIgDPByWYQ';

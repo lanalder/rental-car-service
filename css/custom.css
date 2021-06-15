@@ -5,6 +5,8 @@ body {
   margin: 0px;
   background-image: url('../img/bg.jpg');
   background-size: cover;
+  /* z-index: -200;
+  position: fixed; */
 }
 
 #canvas {
