@@ -39,17 +39,21 @@ body {
   margin: 15vh 20vw 25vh 20vw;
 }
 
-.date-tit {
+/* .date-tit {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  margin-right: 0px !important;
-}
+} */
 
 .day-no {
-  width: 15%;
+  width: 18%;
   /* margin-left: 38% !important; */
   float: left;
+}
+
+.changing-days {
+  display: flex;
+  justify-content: center;
 }
 
 .litepicker {
@@ -59,9 +63,24 @@ body {
 }
 
 .human-form-day {
-  /* width: 70%; */
+  /* width: 50%; */
   text-align: center;
+  margin-right: 0px !important;
   /* height: inherit; */
+}
+
+/* .map-cont {
+  z-index: 1000;
+  width: 100px;
+  height: 100px;
+}
+
+.mapboxgl-map {
+  height: 1000px;
+} */
+
+.map-cont {
+  position: absolute;
 }
 
 .hide {

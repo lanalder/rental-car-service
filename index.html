@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="stylesheet" href="css/blocks.min.css" />
+  <!-- <link href='https://api.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.css' rel='stylesheet' /> -->
+  <link rel='stylesheet' href="node_modules/mapbox-gl/src/css/mapbox-gl.css">
   <link rel="stylesheet" href="css/custom.css">
   <title>Document</title>
 </head>
@@ -17,15 +19,16 @@
       <div class="ppl-no block inline">0</div>
     </div>
   </div>
-  <div class="date-cont wrapper block inp-el">
-    <div class="date-tit">
+  <div class="date-cont title wrapper block inp-el">
       For how long will you need your rental?
-      <div class="silly-flex">
+      <div class="changing-days">
         <input type="number" class="day-no block inline" name="" max="15" min="1" value="">
         <div class="human-form-day block inline"></div>
       </div>
-    </div>
     <div class="date"></div>
+  </div>
+  <div class="map-cont wrapper block inp-el">
+  <div class="map"></div>
   </div>
   <div class="grass-cont">
     <div class="grass0"></div>
@@ -35,7 +38,7 @@
   </div>
   <img class="car" src="img/car.png" width="35%" alt="">
   <!-- <img class="car" src="img/mb.png" alt=""> -->
-  <!-- <img class="mini" src="img/mini.png" alt=""> -->
+  <!-- <img class="car" src="img/mini.png" alt=""> -->
 
 
   <div class="page-sign-cont">
@@ -43,5 +46,6 @@
     <div class="page-sign-prev"></div>
   </div>
   <script type="text/javascript" src="js/bundle.js"></script>
+
 </body>
 </html>
