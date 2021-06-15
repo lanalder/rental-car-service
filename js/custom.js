@@ -108,7 +108,7 @@ import Litepicker from 'litepicker';
   let car = {
     thingItself: document.querySelector('.car'),
     position() {
-      this.thingItself.style.bottom = `${inProptn(1, 33)}px`;
+      this.thingItself.style.bottom = `${inProptn(1, 15)}px`;
       // this! is properly not reponsive
     }
   };
@@ -149,6 +149,7 @@ import Litepicker from 'litepicker';
     init.setScl();
     road.markings();
     grass.draw();
+    date.init();
   }
 
   function inProptn(nu, de) {
@@ -219,21 +220,59 @@ import Litepicker from 'litepicker';
     });
   }
 
+  const picker = new Litepicker({
+    element: document.querySelector('.date'),
+    startDate: new Date(),
+    inlineMode: true,
+    autoRefresh: true,
+    autoApply: true
+  });
+
   let date = {
-    outer: document.querySelector('.date'),
-    picker: null,
+    inst: [new Date()],
+    msDays: 84600000,
+    noEle: document.querySelector('.day-no'),
+    txtEle: document.querySelector('.human-form-day'),
+
+    humanFriendly(d) {
+      return d.toDateString().slice(0, -4); },
+
     init() {
-      this.picker =  new Litepicker({
-        element: this.outer,
-        startDate: new Date(),
-        inlineMode: true,
-        autoRefresh: true
-      });
-      this.picker.ui.classList.add('block', 'inline');
+      picker.ui.classList.add('block', 'inline');
       document.querySelector('.date-cont').style.left = `${init.w}px`;
-    }
+      this.txtEle.textContent = `${this.humanFriendly(this.inst[0])} --`;
+    },
+
+    get dayDiff() {
+      return Math.floor(Math.abs(this.inst[1]-this.inst[0])/this.msDays)+1; }
   };
 
-  date.init();
+  picker.ui.addEventListener('click', datedealer, false);
+
+  date.noEle.addEventListener('click', function(e) {
+    let inpMS = date.inst[0].getTime() +
+    Math.floor(date.msDays * date.noEle.valueAsNumber) - date.msDays;
+
+    picker.setDateRange(date.inst[0], new Date(inpMS));
+  }, false);
+
+  function datedealer() {
+    let clkd = picker.getDate();
+    date.inst.push(clkd.dateInstance);
+
+    date.txtEle.textContent = `${date.humanFriendly(date.inst[0])} --`;
+
+    if (date.inst.length > 1) {
+      picker.setDateRange(date.inst[0], date.inst[1]);
+
+      date.noEle.value = `${date.dayDiff}`;
+
+      date.txtEle.textContent = `${date.humanFriendly(date.inst[0])} -- ${date.humanFriendly(date.inst[1])}`;
+      
+      date.inst.shift();
+    }
+  }
+
+
 
 }());

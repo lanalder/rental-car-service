@@ -36,17 +36,32 @@ body {
 }
 
 .date-cont {
-  display: flex;
   margin: 15vh 20vw 25vh 20vw;
-  flex-direction: column;
-  text-align: center;
 }
 
+.date-tit {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-right: 0px !important;
+}
+
+.day-no {
+  width: 15%;
+  /* margin-left: 38% !important; */
+  float: left;
+}
 
 .litepicker {
-  display: block !important;
+  /* display: block !important; */
   margin-top: 5px !important;
   /* margin: 5px 5px 5px 5px !important; */
+}
+
+.human-form-day {
+  /* width: 70%; */
+  text-align: center;
+  /* height: inherit; */
 }
 
 .hide {
