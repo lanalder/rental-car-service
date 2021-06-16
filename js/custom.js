@@ -57,12 +57,12 @@ import Litepicker from 'litepicker';
   };
 
   let road = {
-    h: inProptn(1, 6),
+    h: inProptn(1, 7),
     // this is a mess, inProptn() used often 2 round ratios of window size
     get y() { return init.h - this.h * 1.5; },
     // for road positioning
     get linY() { return this.y + (this.h / 3); },
-    get linH() { return this.h / 9; },
+    get linH() { return this.h / 12; },
     // lin stuff for road marking positioning
     linW: inProptn(0, 9),
     animark: 0,
@@ -141,7 +141,7 @@ import Litepicker from 'litepicker';
     // each grass img is 50x50 so the amt needed 2 fill up screen is w/50
 
     // get amt() {
-    //   return carpark.exists ? inProptn(0, 110) : inProptn(0, 50); },
+      // return carpark.exists ? inProptn(0, 110) : inProptn(0, 50); },
 
     roots: new Array(inProptn(0, 50)),
     // for holding each img
@@ -170,6 +170,12 @@ import Litepicker from 'litepicker';
           this.roots[j] = new Image(50, 50);
           this.roots[j].src = '../img/grs.png';
           this.soil[i].appendChild(this.roots[j]);
+
+          if (carpark.exists) {
+            // grass goes under n not in way of carpark (could just do this all the time? but will prolly still need exists prop for sign etc)
+            this.roots[j].style.position = 'relative';
+            this.roots[j].style.zIndex = '-110';
+          }
         }
       }
 
@@ -327,50 +333,54 @@ import Litepicker from 'litepicker';
     }
   }
 
-  const cpCanv = document.getElementById('carpark');
-  const cptx = cpCanv.getContext('2d');
-
-  cptx.scale(window.devicePixelRatio, window.devicePixelRatio);
-
   let carpark = {
+    colours: ['#9ca297', '#b1bab0', 'black'],
+    vechCont: document.querySelector('.cp-cars'),
+    vechs: ['mb', 'cpv', 'mini'],
+    // 2 draw curb n carpark respectively
+    // fractions man >:(
     init() {
-      cpCanv.width = inProptn(0, 2);
-      cpCanv.height = inProptn(1, 2);
-      cpCanv.style.zIndex = '5';
-      cptx.beginPath();
-      cptx.fillStyle = 'black';
-      cptx.moveTo(inProptn(0, 2), init.h);
-      cptx.bezierCurveTo(init.w / 2, init.h, init.w / 2 + init.w / 27, init.h / 2 + init.h / 6, init.w / 2 + init.w / 5, init.h / 2);
-      // annoying that this method can't take more than one return from inProptn
-      cptx.lineTo(init.w, init.h / 2);
-      cptx.lineTo(init.w, init.h);
-      cptx.closePath();
-      cptx.fill();
+      for (let i = 0; i < 3; i++) {
+        // not rly sure why i make things so complicated
+        if (i) {
+          ctx.translate(0, 3.3);
+        } else {
+          ctx.translate(0, -3.3);
+        }
+        ctx.beginPath();
+        ctx.fillStyle = `${this.colours[i]}`;
+        ctx.moveTo(init.w / 2 + i * 5, init.h);
+        // ctx.lineTo(init.w / 2 + init.w / 5, init.h / 2);
+        // cause its curvy n translated with curbies starting x gonna b a lil different
+        ctx.bezierCurveTo(init.w / 2, init.h, init.w / 2 + init.w / 18, init.h - init.h / 3, init.w / 2 + init.w / 7, init.h - init.h / 3);
+        // annoying that this method can't take more than one return from inProptn
+        ctx.lineTo(init.w, init.h - init.h / 3);
+        ctx.lineTo(init.w, init.h);
+        ctx.closePath();
+        ctx.fill();
+        // i cannot BElieve setting vals to props within prop funcs doesn't change outer val ig it makes sense but like funcs should b able 2 change more global vars than themselves?? is this what;s happening w grass arrs?
+      }
+      Object.defineProperty(this, 'exists', {value: 1, writable: true});
+      // this is to let other objs know that there's a carpark in the way of where they wanna go
+      ctx.fillStyle = 'black';
+      ctx.fillRect(init.w / 2, road.y - 3.3, 100, road.h);
+      // a sneaky black rect to cover where the carpark curb crosses over the road
+    },
+    placeCars() {
+      // redo when cpvan acc done lol
+      for (let i = 0; i < this.vechs.length; i++) {
+        let v = new Image(300, 200);
+        v.src = `../img/${this.vechs[i]}.png`;
+        this.vechCont.appendChild(v);
+      }
+    },
+    plant() {
+
     }
   };
 
-  // let carpark = {
-  //   // fractions man >:(
-  //   init() {
-  //     ctx.beginPath();
-  //     ctx.fillStyle = 'black';
-  //     ctx.moveTo(inProptn(0, 2), init.h);
-  //     ctx.bezierCurveTo(init.w / 2, init.h, init.w / 2 + init.w / 27, init.h / 2 + init.h / 6, init.w / 2 + init.w / 5, init.h / 2);
-  //     // annoying that this method can't take more than one return from inProptn
-  //     ctx.lineTo(init.w, init.h / 2);
-  //     ctx.lineTo(init.w, init.h);
-  //     ctx.closePath();
-  //     ctx.fill();
-  //
-  //     Object.defineProperty(this, 'exists', {value: 1, writable: true});
-  //     // this is to let other objs know that there's a carpark in the way of where they wanna go
-  //
-  //     // i cannot BElieve setting vals to props within prop funcs doesn't change outer val ig it makes sense but like funcs should b able 2 change more global vars than themselves?? is this what;s happening w grass arrs?
-  //
-  //     // curbs n stuff
-  //
-  //   }
-  // };
+  carpark.init();
+  carpark.placeCars();
 
 
   // mapboxgl.accessToken = 'pk.eyJ1IjoibGFuYWxkZXIiLCJhIjoiY2tweGlqd2RmMWVyajJ2b2lrejYzbDZ5diJ9.ELtetZkKKBOunIgDPByWYQ';
