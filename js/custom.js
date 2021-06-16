@@ -131,7 +131,7 @@ import Litepicker from 'litepicker';
   let car = {
     thingItself: document.querySelector('.car'),
     position() {
-      this.thingItself.style.bottom = `${inProptn(1, 15)}px`;
+      this.thingItself.style.bottom = `${inProptn(1, 21)}px`;
       // this! is properly not reponsive
     }
   };
@@ -151,8 +151,6 @@ import Litepicker from 'litepicker';
     get lawnmower() {
       Array.from(document.querySelector('.grass-cont').children); },
       // mad weird that return here doesn't update array
-      // this is just so when animated old grass can b cleared n then repositioned; not just using roots bc that only holds imgs for one line at a time... ig values get set back 2 null after loop in draw? not rly sure, can't rly remember if i cleared it somewhere or what
-      // these arrs rly need 2 be looked at, i swear some are redundant but idkk
 
     draw() {
       if (this.lawnmower) {
@@ -171,11 +169,11 @@ import Litepicker from 'litepicker';
           this.roots[j].src = '../img/grs.png';
           this.soil[i].appendChild(this.roots[j]);
 
-          if (carpark.exists) {
-            // grass goes under n not in way of carpark (could just do this all the time? but will prolly still need exists prop for sign etc)
-            this.roots[j].style.position = 'relative';
-            this.roots[j].style.zIndex = '-110';
-          }
+          // if (carpark.exists) {
+          //   // grass goes under n not in way of carpark (could just do this all the time? but will prolly still need exists prop for sign etc)
+          //   this.roots[j].style.position = 'relative';
+          //   this.roots[j].style.zIndex = '-110';
+          // }
         }
       }
 
@@ -199,9 +197,10 @@ import Litepicker from 'litepicker';
 
     grass.draw();
     date.init();
-    carpark.init();
+    vechSelect.init();
     // geo.init();
-    // carpark.exists = 1;
+    // carpark.init();
+    // carpark.placeCars();
   }
 
   function inProptn(nu, de) {
@@ -259,9 +258,38 @@ import Litepicker from 'litepicker';
         road.markings();
       }
     });
+    if (signs.page === 2) {
+      anime({
+        targets: vechSelect,
+        anicar: init.w,
+        round: 1,
+        easing: 'easeOutExpo',
+        duration: 4750,
+        update: function() {
+          vechSelect.init();
+        }
+      });
+    }
+    // if (signs.page === 2) {
+    //   Object.defineProperty(this, 'exists', {value: 1, writable: true});
+    //   // this is to let other objs know that there's a carpark in the way of where they wanna go
+    //   ctx.fillStyle = 'black';
+    //   ctx.fillRect(init.w / 2, road.y - 3.3, 100, road.h);
+    //   // a sneaky black rect to cover where the carpark curb crosses over the road
+    //   anime({
+    //     targets: carpark,
+    //     anipark: 0,
+    //     // round: 1,
+    //     easing: 'linear',
+    //     duration: 2750,
+    //     update: function() {
+    //       carpark.init();
+    //       // carpark.placeCars();
+    //     }
+    //   });
+    // }
     aniGrass();
     signs.page++;
-    console.log(signs.page);
     road.animark = 0;
   }
 
@@ -333,55 +361,89 @@ import Litepicker from 'litepicker';
     }
   }
 
-  let carpark = {
-    colours: ['#9ca297', '#b1bab0', 'black'],
-    vechCont: document.querySelector('.cp-cars'),
-    vechs: ['mb', 'cpv', 'mini'],
-    // 2 draw curb n carpark respectively
-    // fractions man >:(
-    init() {
-      for (let i = 0; i < 3; i++) {
-        // not rly sure why i make things so complicated
-        if (i) {
-          ctx.translate(0, 3.3);
-        } else {
-          ctx.translate(0, -3.3);
-        }
-        ctx.beginPath();
-        ctx.fillStyle = `${this.colours[i]}`;
-        ctx.moveTo(init.w / 2 + i * 5, init.h);
-        // ctx.lineTo(init.w / 2 + init.w / 5, init.h / 2);
-        // cause its curvy n translated with curbies starting x gonna b a lil different
-        ctx.bezierCurveTo(init.w / 2, init.h, init.w / 2 + init.w / 18, init.h - init.h / 3, init.w / 2 + init.w / 7, init.h - init.h / 3);
-        // annoying that this method can't take more than one return from inProptn
-        ctx.lineTo(init.w, init.h - init.h / 3);
-        ctx.lineTo(init.w, init.h);
-        ctx.closePath();
-        ctx.fill();
-        // i cannot BElieve setting vals to props within prop funcs doesn't change outer val ig it makes sense but like funcs should b able 2 change more global vars than themselves?? is this what;s happening w grass arrs?
-      }
-      Object.defineProperty(this, 'exists', {value: 1, writable: true});
-      // this is to let other objs know that there's a carpark in the way of where they wanna go
-      ctx.fillStyle = 'black';
-      ctx.fillRect(init.w / 2, road.y - 3.3, 100, road.h);
-      // a sneaky black rect to cover where the carpark curb crosses over the road
-    },
-    placeCars() {
-      // redo when cpvan acc done lol
-      for (let i = 0; i < this.vechs.length; i++) {
-        let v = new Image(300, 200);
-        v.src = `../img/${this.vechs[i]}.png`;
-        this.vechCont.appendChild(v);
-      }
-    },
-    plant() {
+  function vp2px(vw) {
+    return (window.innerHeight * vw) / 100;
+  }
 
+  let vechSelect = {
+    cont: document.querySelector('.v-cont'),
+    vechs: Array.from(document.querySelector('.vechs').children),
+    vRightPos: [12, 7, 81],
+    anicar: 0,
+    init() {
+      this.cont.style.left = `${init.w * 2}px`;
+      for (let i = 0; i < this.vechs.length; i++) {
+        // this.vechs[i].style.right = `${vp2px(this.vechs[i])}`
+        this.vechs[i].style.right = `${vp2px(this.vRightPos[i]) - init.w + this.anicar}px`;
+        // can u rly not get right pos from dom?
+      }
+
+      // for (let i = 0; i < this.vechs.length; i++) {
+      //   let v = new Image(300, 200);
+      //   v.src = `../img/${this.vechs[i]}.png`;
+      //   document.querySelector('.vechs').appendChild(v);
+      // }
     }
   };
 
-  carpark.init();
-  carpark.placeCars();
+  vechSelect.vechs.forEach(x => {
+    x.addEventListener('click', function(e) {
+      let name = x.classList[1];
+      let newD = document.createElement('div');
+      newD.classList.add('wrapper', 'block', `${name}`, 'manu-facts');
+      console.log(newD);
+      document.querySelector('.v-info').appendChild(newD);
+    }, true);
+  });
 
+  // let carpark = {
+  //   colours: ['#9ca297', '#b1bab0', 'black'],
+  //   vechCont: document.querySelector('.cp-cars'),
+  //   vechs: ['mb', 'cpv', 'mini'],
+  //   // 2 draw curb n carpark respectively
+  //   anipark: init.w * 3,
+  //   tY: 0,
+  //   // pos on page was written first so easily 2 subtract from pos on screen to animate rather than the other way around
+  //   // fractions man >:(
+  //   init() {
+  //     for (let i = 0; i < 3; i++) {
+  //       // not rly sure why i make things so complicated
+  //       if (i) {
+  //         ctx.translate(0, 3.3);
+  //       } else {
+  //         ctx.translate(0, -3.3);
+  //       }
+  //
+  //       ctx.fillStyle='red';
+  //       ctx.fillRect(0+this.anipark, this.tY, 1000, 1000);
+  //
+  //       ctx.beginPath();
+  //       ctx.fillStyle = `${this.colours[i]}`;
+  //       ctx.moveTo((init.w / 2) + this.anipark, init.h);
+  //       // ctx.lineTo(init.w / 2 + init.w / 5, init.h / 2);
+  //       // cause its curvy n translated with curbies starting x gonna b a lil different
+  //       ctx.bezierCurveTo(init.w / 2 + this.anipark, init.h, (init.w / 2) + (init.w / 18) + this.anipark, init.h - init.h / 3, (init.w / 2) + (init.w / 7) + this.anipark, init.h - init.h / 3);
+  //       // annoying that this method can't take more than one return from inProptn
+  //       ctx.lineTo(init.w + this.anipark, init.h - init.h / 3);
+  //       ctx.lineTo(init.w + this.anipark, init.h);
+  //       ctx.closePath();
+  //       ctx.fill();
+  //       console.log(this.anipark, (init.w / 2) );
+  //       // i cannot BElieve setting vals to props within prop funcs doesn't change outer val ig it makes sense but like funcs should b able 2 change more global vars than themselves?? is this what;s happening w grass arrs?
+  //     }
+  //   },
+  //   placeCars() {
+  //     // redo when cpvan acc done lol
+  //     for (let i = 0; i < this.vechs.length; i++) {
+  //       let v = new Image(300, 200);
+  //       v.src = `../img/${this.vechs[i]}.png`;
+  //       this.vechCont.appendChild(v);
+  //     }
+  //   },
+  //   plant() {
+  //
+  //   }
+  // };
 
   // mapboxgl.accessToken = 'pk.eyJ1IjoibGFuYWxkZXIiLCJhIjoiY2tweGlqd2RmMWVyajJ2b2lrejYzbDZ5diJ9.ELtetZkKKBOunIgDPByWYQ';
   //
