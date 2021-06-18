@@ -172,7 +172,7 @@ import Litepicker from 'litepicker';
     thingItself: document.querySelector('.car'),
     // a short wee beast but useful in other things, like animate n
     position() {
-      this.thingItself.style.bottom = `${inProptn(1, 21)}px`;
+      this.thingItself.style.bottom = `${vp2px(0, 15)}px`;
       // this! is properly not reponsive
     }
   };
@@ -258,7 +258,7 @@ import Litepicker from 'litepicker';
       this.cont.style.left = `${init.w * 2}px`;
       for (let i = 0; i < this.vechs.length; i++) {
         // this.vechs[i].style.right = `${vp2px(this.vechs[i])}`
-        this.vechs[i].style.right = `${vp2px(this.vRightPos[i]) - init.w + this.anicar}px`;
+        this.vechs[i].style.right = `${vp2px(1, this.vRightPos[i]) - init.w + this.anicar}px`;
         // can u rly not get right pos from dom?
       }
     }
@@ -438,8 +438,11 @@ import Litepicker from 'litepicker';
               : Math.ceil(Math.abs(init.h / de));
   }
 
-  function vp2px(vw) {
-    return (window.innerHeight * vw) / 100;
+   function vp2px(d, vw) {
+    // d T = vw/h -> px, d F reverse
+    return d ? Math.round((window.innerHeight * vw) / 100)
+      : Math.round(((vw * 100) / window.innerWidth) * 100);
+      // this second one a bit diff from the formula on stackoverflow but f it
   }
 
   signs.pS[0].addEventListener('click', animate, false);
