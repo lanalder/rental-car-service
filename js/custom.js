@@ -1,6 +1,6 @@
-// import $ from 'jquery';
-//   window.jQuery = $;
-//   window.$ = $;
+import $ from 'jquery';
+  window.jQuery = $;
+  window.$ = $;
 
 import Litepicker from 'litepicker';
 // import mapboxgl from 'mapbox-gl';
@@ -10,7 +10,7 @@ import Litepicker from 'litepicker';
 
   const anime = require('animejs/lib/anime.js');
   // const mapboxgl = require('mapbox-gl/dist/mapbox-gl.js');
-  // const parsley = require('parsleyjs/dist/parsley.min.js');
+  const parsley = require('parsleyjs/dist/parsley.min.js');
 
   // obj to contain the transport dataset
   const omni = {
@@ -21,7 +21,8 @@ import Litepicker from 'litepicker';
       days: [[1, 5], [1, 10], [3, 10], [2, 15]],
       coin: [109, 129, 144, 200],
       gas: [109, 129, 144, 200]
-    }
+    },
+    txt: ['motorbike', 'small car', 'large car', 'campervan']
   };
 
   const canvas = document.getElementById('canvas');
@@ -41,6 +42,7 @@ import Litepicker from 'litepicker';
       document.body.style.width = `${this.w}px`;
       document.body.style.height = `${this.h}px`;
       // style used on html els and not for canvas, since canvas css doesn't determine actual available coords, but as an obj its size does this as well as set automatically size as an element (im p sure)
+      // canvas (as obj) default size 300x150 n if only change css, scales to that n is all blurred
       canvas.width = this.w;
       canvas.height = this.h;
       // when init is called, sets off a domino effect of all the other objs that need 2 be initd
@@ -100,7 +102,7 @@ import Litepicker from 'litepicker';
     get yPos() {
       return (road.y - (road.linH / 3) * 1.5)-inProptn(1, 6); },
     draw() {
-      ctx.fillStyle = '#cdc597';
+      ctx.fillStyle = '#1A1D22';
       ctx.fillRect(init.w - inProptn(0, 21), this.yPos, inProptn(0, 150), inProptn(1, 6));
       this.pS[0].style.top = `${this.yPos - this.pS[0].clientHeight}px`;
       this.pS[0].style.left = `${init.w - inProptn(0, 21) - this.pS[0].clientWidth}px`;
@@ -113,7 +115,7 @@ import Litepicker from 'litepicker';
     thingItself: document.querySelector('.car'),
     // a short wee thing but an obj in its own right mostly for anime
     position() {
-      this.thingItself.style.bottom = `${vp2px(0, 10)}px`;
+      this.thingItself.style.bottom = `${vp2px(0, 13)}px`;
       // this! is properly not reponsive
     }
   };
@@ -232,6 +234,8 @@ import Litepicker from 'litepicker';
     let inpMS = date.inst[0].getTime() +
     Math.floor(date.msDays * date.noEle.valueAsNumber) - date.msDays;
     // just highlighting the daterange for input in the lil up n down no box rather than picker itself
+
+
     picker.setDateRange(date.inst[0], new Date(inpMS));
   }, false);
 
@@ -250,11 +254,18 @@ import Litepicker from 'litepicker';
     date.txtEle.textContent = `${date.humanFriendly(date.inst[0])} until ${date.humanFriendly(date.inst[1])}`;
   }
 
-  // let valiDate = $('.day-no').parsley();
-  // if (!valiDate.isValid()) {
-  //   window.jQuery.addError(valiDate, {message: })
-  // }
-  // console.log(valiDate.isValid());
+  let valiDate = $('.day-no').parsley();
+
+  $('.day-no').change(function() {
+    $('.day-no').parsley().validate();
+    $('.day-no').parsley().on('field:error', function() {
+      // valiDate.isValid();
+      console.log(valiDate.isValid());
+      let s = new Image(300, 300);
+      s.src = '../img/sheepie.png';
+      document.querySelector('.err-box').appendChild(s);
+    });
+  });
 
   // _*_*_*_*_*_*_*_*_| Pg. 3 CAR SELECT |_*_*_*_*_*_*_*_*_*_
 
@@ -272,11 +283,10 @@ import Litepicker from 'litepicker';
     txt: document.querySelector('.v-tit'),
     caryard: document.querySelector('.vechs'),
     opts: [],
-    clkd: [],
-    anicar: 0,
+    anicar: init.w * 2,
     init() {
       this.txt.style.left = `${init.w * 2}px`;
-      this.caryard.style.left = `${init.w * 2 + this.anicar}px`;
+      // this.caryard.style.left = `${init.w * 2 + this.anicar}px`;
     },
     present() {
       // since must(ang) alr on screen as default, a. don't wanna try add it again and b. can drive offscreen into the abyss
@@ -292,32 +302,54 @@ import Litepicker from 'litepicker';
         window.setTimeout(function() {
           car.thingItself.classList.add('hide');
         }, 1400);
+        window.clearTimeout();
+        // not strictly necessary but good practice ig
       }
       this.opts.forEach(x => {
-        console.log(x);
         let c = new Image();
         c.src = `../img/${x}.png`;
         c.classList.add('v', `${x}`);
+        c.style.right = `${-init.w}px`;
         this.caryard.appendChild(c);
         carChat();
       });
-      window.clearTimeout();
-      // not strictly necessary but good practice ig
     }
   };
 
   function carChat() {
     // tog 2 hide info on second click
-    let tog = 0;
-    Array.from(mechanic.caryard.children).forEach(x => {
+    let clkd = [];
+    let infoCont = document.querySelector('.v-info');
+
+    [...Array.from(mechanic.caryard.children), car.thingItself].forEach(x => {
+    // spread ... makes a flattened list of an iterable literal, super cool n handy here otherwise end up w a 2d arr
       x.addEventListener('click', function(e) {
-        tog++;
+        clkd.push(x);
+        if (clkd.length > 1) {
+          infoCont.removeChild(infoCont.firstChild);
+        }
+
+        // if (clkd[clkd.length - 1] === clkd[clkd.length - 2]) {
+        //   console.log('hdi', clkd[clkd.length - 1], clkd[clkd.length - 2]);
+        //   while (infoCont.lastChild) {
+        //     infoCont.lastChild.remove();
+        //   }
+        //   clkd = [];
+        // } else {
         let newD = document.createElement('div');
-        newD.classList.add('wrapper', 'block', `${mechanic.clkd[mechanic.clkd.length - 1]}`, 'manu-facts');
-        document.querySelector('.v-info').appendChild(newD);
+        let k = omni.keyz.indexOf(x.classList[1]);
+
+        newD.classList.add('wrapper', 'block', 'manu-facts', `${x.classList[1]}`);
+        infoCont.appendChild(newD);
+
+        newD.textContent = `${omni.txt[k]}: \r\n`;
+        newD.textContent += `$${omni.vals.coin[k] * date.noEle.valueAsNumber} for your ${date.noEle.valueAsNumber} days away`;
+
       }, false);
     });
   }
+
+
 
   // _*_*_*_*_*_*_*_*_| HANDY DANDY FUNCS |_*_*_*_*_*_*_*_*_*_
 
@@ -357,20 +389,16 @@ import Litepicker from 'litepicker';
       mechanic.present();
       anime({
         targets: mechanic.caryard,
-        anicar: init.w,
-        round: 1,
+        translateX: -(init.w + vp2px(0, 20)),
+        // negative here as well since style target is .right (-init.w in .present) and vechs come from the right
         easing: 'easeOutExpo',
-        duration: 4750,
-        update: function() {
-          mechanic.init();
-        }
+        duration: 3000
       });
     }
     signs.page++;
     road.animark = 0;
-    mechanic.anicar = -init.w;
+    // mechanic.anicar = -init.w;
   }
-
 
   // if (signs.page === 2) {
   //   Object.defineProperty(this, 'exists', {value: 1, writable: true});
