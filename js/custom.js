@@ -98,19 +98,42 @@ import Litepicker from 'litepicker';
   let signs = {
     page: 1,
     pS: [document.querySelector('.page-sign-1'), document.querySelector('.page-sign-2')],
+    get txt() { return [['Go back ←', `Q. ${this.page - 1} of 4`], ['Onwards →', `Q. ${this.page} of 4`]]; },
+    // get just used so can reference this.page, prop defs can't ref each other it seems bc they're all read in one initialising sweep, unlike methods/get, which happen after obj has been processed
     anisign: 0,
     // height is not responsive atm!!
+    eraser: [[], []],
     get yPos() {
       return (road.y - (road.linH / 3) * 1.5)-inProptn(1, 6); },
     draw() {
+      if (this.eraser) {
+        this.erase();
+      }
       ctx.fillStyle = '#1A1D22';
+
+      // for first sign (gets confusing since signs alternate whether they're prev or next so there's the illusion of driving by them (better than making a whole bunch of one-off use signs tho), but 1st sign (pS[0]) always the sign most to the left)
       ctx.fillRect(init.w - inProptn(0, 21) - this.anisign, this.yPos, inProptn(0, 150), inProptn(1, 6));
       this.pS[0].style.top = `${this.yPos - this.pS[0].clientHeight}px`;
       this.pS[0].style.left = `${init.w - inProptn(0, 21) - this.pS[0].clientWidth - this.anisign}px`;
 
+      this.eraser[0].push(init.w - inProptn(0, 21) - this.anisign - 3, this.yPos - 3, inProptn(0, 150) + 5, inProptn(1, 6) + 5);
+
+      // 2nd sign
+      ctx.fillRect(init.w * 2 - inProptn(0, 3) - this.anisign, this.yPos, inProptn(0, 150), inProptn(1, 6));
+      this.pS[1].style.top = `${this.yPos - this.pS[1].clientHeight}px`;
+      this.pS[1].style.left = `${init.w * 2 - inProptn(0, 3) - this.pS[1].clientWidth - this.anisign}px`;
+
+      this.eraser[1].push(init.w * 2 - inProptn(0, 3) - this.anisign - 3, this.yPos - 3, inProptn(0, 150) + 5, inProptn(1, 6) + 5);
 
       // next obj init
       // car.position();
+    },
+    erase() {
+      ctx.clearRect(this.eraser[0][this.eraser[0].length - 4], this.eraser[0][this.eraser[0].length - 3], this.eraser[0][this.eraser[0].length - 2], this.eraser[0][this.eraser[0].length - 1]);
+
+      ctx.clearRect(this.eraser[1][this.eraser[1].length - 4], this.eraser[1][this.eraser[1].length - 3], this.eraser[1][this.eraser[1].length - 2], this.eraser[1][this.eraser[1].length - 1]);
+
+      this.eraser = [[], []];
     }
   };
 
@@ -265,7 +288,7 @@ import Litepicker from 'litepicker';
   function valiDate() {
     $('.day-no').parsley().validate();
     if (!$('.day-no').parsley().isValid()) {
-      date.txtEle.textContent = 'sorry, but there is a max. of 15 days :o(';
+      date.txtEle.textContent = 'Sorry! Rentals have up to 15 days :o(';
       // date.txtEle.style.backgroundColor =
     }
   }
@@ -295,11 +318,14 @@ import Litepicker from 'litepicker';
       if (this.opts.includes('must')) {
         this.opts = this.opts.filter(x => x !== 'must');
       } else {
+        car.thingItself.style.zIndex = '-3';
+        // otherwise drives in front of mini n looks straight up silly
         anime({
           targets: car.thingItself,
-          translateX: init.w,
+          translateX: init.w + 1000,
+          // extra 1k just for safety
           easing: 'easeOutQuad',
-          duration: 1600
+          duration: 2600
         });
         window.setTimeout(function() {
           car.thingItself.classList.add('hide');
@@ -307,7 +333,6 @@ import Litepicker from 'litepicker';
         window.clearTimeout();
         // not strictly necessary but good practice ig
       }
-      console.log(this.opts);
       this.opts.forEach(x => {
         let c = new Image();
         c.src = `../img/${x}.png`;
@@ -354,23 +379,30 @@ import Litepicker from 'litepicker';
   // _*_*_*_*_*_*_*_*_| HANDY DANDY FUNCS |_*_*_*_*_*_*_*_*_*_
 
   function animate(dirc) {
-    // dirc if -1 goes back (neg * pos = neg), if 1 forward
+    console.log(signs.page);
+    // dirc if 0 goes back (since transX becomes 0 having been times'd by it, ie. og. pos), if 1 forward
     // ghost();
+    if (dirc) {
+      signs.page++;
+    } else {
+      signs.page--;
+    }
     anime({
       targets: car.thingItself,
-      translateX: (80 * signs.page),
+      translateX: (80 * dirc ) * signs.page,
       easing: 'easeOutExpo',
       duration: 3000
     });
     anime({
       targets: inpBits,
-      translateX: -((init.w / 1.1) * signs.page + signs.page * 120),
+      translateX: dirc * (-((init.w / 1.1) * (signs.page - 1) + ((signs.page - 1) * 120))),
+      // idk what mathematically is going on here but random sums haven't failed me yet
       easing: 'easeOutExpo',
       duration: 1500
     });
     anime({
       targets: road,
-      animark: 800 * signs.page,
+      animark: dirc * (400 * signs.page),
       easing: 'easeOutExpo',
       duration: 2750,
       update: function() {
@@ -381,26 +413,42 @@ import Litepicker from 'litepicker';
     grass.draw();
     anime({
       targets: grass.soil,
-      translateX: -(800 * signs.page),
+      translateX: dirc * (-(400 * signs.page)),
       easing: 'easeOutExpo',
       duration: 2700
     });
-    if (signs.page === 2) {
+    if (signs.page === 3) {
       chosen1();
       mechanic.present();
       anime({
         targets: mechanic.caryard,
-        translateX: -(init.w + vp2px(0, 20)),
+        translateX: dirc * (-(init.w + vp2px(0, 20))),
         // negative here as well since style target is .right (-init.w in .present) and vechs come from the right
         easing: 'easeOutExpo',
         duration: 3000
       });
     }
-    anime({
-      targets: signs.
-      anisign: () * signs.page
-    })
-    signs.page++;
+    // if (signs.page % 2) {
+      anime({
+        targets: signs,
+        anisign: dirc * ((init.w / 1.3) * (signs.page - 1)),
+        easing: 'easeOutExpo',
+        duration: 2750,
+        update: function() {
+          signs.draw();
+        }
+      });
+
+      let peas = [Array.from(signs.pS[0].children), Array.from(signs.pS[1].children)];
+      peas.forEach(x => {
+        x.forEach(y => {
+          y.textContent = signs.txt[peas.indexOf(x)][x.indexOf(y)];
+          // blame linter on how abstract this got, it didn't like when peas was defined in loop something ab scope and confusing semantics
+        });
+      });
+    console.log(signs.page);
+    // }
+    // signs.page++;
     // road.animark = 0;
   }
 
@@ -451,8 +499,24 @@ import Litepicker from 'litepicker';
   signs.pS[0].addEventListener('click', function() {
     if (signs.page === 1 && ppl.no === 0) {
       document.querySelector('.ppl-msg').textContent = "Cannot rent a car for nobody! Select at least 1 person";
-    } else if ($('.day-no').parsley().isValid()){
-      animate();
+    } else if (signs.page === 1 && ppl.no > 0) {
+      animate(1);
+      // signs.page++;
+    } else if (signs.page !== 1) {
+      animate(0);
+      // signs.page--;
+      Array.from(signs.pS[0].children).forEach(x => {
+        x.textContent = signs.txt[1][Array.from(signs.pS[0].children).indexOf(x)];
+      });
+    }
+  }, false);
+
+  signs.pS[1].addEventListener('click', function() {
+    if (signs.page === 2 && $('.day-no').parsley().isValid()) {
+      // chosen1();
+      // mechanic.present();
+      animate(1);
+      // signs.page++;
     }
   }, false);
 
