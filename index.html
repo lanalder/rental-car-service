@@ -20,6 +20,7 @@
   </div> -->
   <div class="ppl wrapper block inp-el">
     How many people will you be with?
+    <p class="ppl-msg"> Click friends below to select </p>
     <div class="inp-cont">
       <div class="ppl-cont"></div>
       <div class="ppl-no block inline">0</div>
@@ -28,7 +29,7 @@
   <div class="date-cont title wrapper block inp-el">
       For how long will you need your rental?
       <div class="changing-days">
-        <input type="number" class="day-no block inline" name="" data-parsley-type="number" data-parsley-max='15' data-parlsey-error-message="rentals have a max of 15 days :o(" value="">
+        <input type="number" class="day-no block inline" name="" data-parsley-type="number" data-parsley-range="[1, 15]" data-parsley-ui-enabled="false" value="">
 
         <div class="human-form-day block inline"></div>
       </div>
@@ -43,8 +44,7 @@
   <div class="map"></div>
   </div> -->
   <div class="v-tit wrapper block inp-el">
-    based on ur selections, the cars below have been chosen:
-    r u happy? y/n
+    based on ur selections, these vechicles are available for your needs: 
   </div>
   <div class="vechs">
     <!-- <img class="v mb hide" src="img/mb.png" alt="">
@@ -66,8 +66,8 @@
 
 
   <div class="page-sign-cont">
-    <div class="page-sign-next wrapper inline block">q. 1<p>next =></p></div>
-    <div class="page-sign-prev"></div>
+    <div class="page-sign-1 wrapper inline block"><p>Onwards →</p> Q. 1 of 4</div>
+    <div class="page-sign-2"></div>
   </div>
   <script type="text/javascript" src="js/bundle.js"></script>
 

@@ -25,6 +25,11 @@ body {
   --block-shadow-color: transparent !important;
 }
 
+p {
+  font-size: 11px !important;
+  text-align: center !important;
+}
+
 /* .logo {
   /* position: absolute; */
   /* top: 1px; */
@@ -52,9 +57,9 @@ body {
   flex-direction: row;
 }
 
-.ppl {
+.inp-el {
   position: absolute;
-  margin: 20vh 20vw 20vh 20vw;
+  margin: 36vh 20vw 20vh 36vw;
   /* top: 30%;
   left: 50%;
   transform: translate(-50%, -30%); */
@@ -70,9 +75,9 @@ body {
   margin-top: 3vh !important; */
 }
 
-.date-cont {
+/* .date-cont {
   margin: 15vh 20vw 25vh 20vw;
-}
+} */
 
 /* .date-tit {
   display: flex;
@@ -129,10 +134,10 @@ body {
   height: 1000px;
 } */
 
-.map-cont {
+/* .map-cont {
   position: absolute;
   margin: 15vh 20vw 25vh 20vw;
-}
+} */
 
 .hide {
   display: none;
@@ -155,6 +160,12 @@ body {
   /* margin-left: 25vw; */
 }
 
+.vechs {
+  height: inherit;
+  /* position: absolute; */
+  /* top: 0px; */
+}
+
 /* .vechs < img {
   z-index: 100;
 } */
@@ -173,19 +184,19 @@ body {
   width: 280px;
   height: 180px;
   /* right: 18vw; */
-  bottom: 9vh;
+  bottom: 26vh;
   /* z-index: 10; */
 }
 
 .mn {
   width: 380px;
   /* right: 13vw; */
-  bottom: -10vh;
+  bottom: 8vh;
   /* z-index: 50; */
 }
 
 .cpv {
-  bottom: 6vh;
+  bottom: 25vh;
   /* z-index: 10; */
   /* right: 67vw; */
   width: 467px;

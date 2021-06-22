@@ -21,8 +21,7 @@ import Litepicker from 'litepicker';
       days: [[1, 5], [1, 10], [3, 10], [2, 15]],
       coin: [109, 129, 144, 200],
       gas: [109, 129, 144, 200]
-    },
-    txt: ['motorbike', 'small car', 'large car', 'campervan']
+    }
   };
 
   const canvas = document.getElementById('canvas');
@@ -46,6 +45,7 @@ import Litepicker from 'litepicker';
       canvas.width = this.w;
       canvas.height = this.h;
       // when init is called, sets off a domino effect of all the other objs that need 2 be initd
+      // ghost();
       road.draw();
     }
   };
@@ -97,17 +97,20 @@ import Litepicker from 'litepicker';
 
   let signs = {
     page: 1,
-    pS: [document.querySelector('.page-sign-next'), document.querySelector('.page-sign-prev')],
+    pS: [document.querySelector('.page-sign-1'), document.querySelector('.page-sign-2')],
+    anisign: 0,
     // height is not responsive atm!!
     get yPos() {
       return (road.y - (road.linH / 3) * 1.5)-inProptn(1, 6); },
     draw() {
       ctx.fillStyle = '#1A1D22';
-      ctx.fillRect(init.w - inProptn(0, 21), this.yPos, inProptn(0, 150), inProptn(1, 6));
+      ctx.fillRect(init.w - inProptn(0, 21) - this.anisign, this.yPos, inProptn(0, 150), inProptn(1, 6));
       this.pS[0].style.top = `${this.yPos - this.pS[0].clientHeight}px`;
-      this.pS[0].style.left = `${init.w - inProptn(0, 21) - this.pS[0].clientWidth}px`;
+      this.pS[0].style.left = `${init.w - inProptn(0, 21) - this.pS[0].clientWidth - this.anisign}px`;
+
+
       // next obj init
-      car.position();
+      // car.position();
     }
   };
 
@@ -115,8 +118,9 @@ import Litepicker from 'litepicker';
     thingItself: document.querySelector('.car'),
     // a short wee thing but an obj in its own right mostly for anime
     position() {
-      this.thingItself.style.bottom = `${vp2px(0, 13)}px`;
+      this.thingItself.style.bottom = `${inProptn(1, 7) * 1.1}px`;
       // this! is properly not reponsive
+      grass.draw();
     }
   };
 
@@ -204,8 +208,7 @@ import Litepicker from 'litepicker';
     startDate: new Date(),
     inlineMode: true,
     autoRefresh: true,
-    autoApply: true,
-    maxDays: 15
+    autoApply: true
   });
 
   let date = {
@@ -224,6 +227,9 @@ import Litepicker from 'litepicker';
       this.cont.style.width = `${picker.ui.clientWidth + 18}px`;
       // i quickly became cssphobic
       this.txtEle.textContent = `${this.humanFriendly(this.inst[0])} until ${this.humanFriendly(this.inst[1])}`;
+      $('.litepicker').click(function() {
+        valiDate();
+      });
     },
     get dayDiff() {
       return Math.floor(Math.abs(this.inst[1]-this.inst[0])/this.msDays)+1; },
@@ -234,8 +240,6 @@ import Litepicker from 'litepicker';
     let inpMS = date.inst[0].getTime() +
     Math.floor(date.msDays * date.noEle.valueAsNumber) - date.msDays;
     // just highlighting the daterange for input in the lil up n down no box rather than picker itself
-
-
     picker.setDateRange(date.inst[0], new Date(inpMS));
   }, false);
 
@@ -254,18 +258,17 @@ import Litepicker from 'litepicker';
     date.txtEle.textContent = `${date.humanFriendly(date.inst[0])} until ${date.humanFriendly(date.inst[1])}`;
   }
 
-  let valiDate = $('.day-no').parsley();
-
   $('.day-no').change(function() {
-    $('.day-no').parsley().validate();
-    $('.day-no').parsley().on('field:error', function() {
-      // valiDate.isValid();
-      console.log(valiDate.isValid());
-      let s = new Image(300, 300);
-      s.src = '../img/sheepie.png';
-      document.querySelector('.err-box').appendChild(s);
-    });
+    valiDate();
   });
+
+  function valiDate() {
+    $('.day-no').parsley().validate();
+    if (!$('.day-no').parsley().isValid()) {
+      date.txtEle.textContent = 'sorry, but there is a max. of 15 days :o(';
+      // date.txtEle.style.backgroundColor =
+    }
+  }
 
   // _*_*_*_*_*_*_*_*_| Pg. 3 CAR SELECT |_*_*_*_*_*_*_*_*_*_
 
@@ -274,7 +277,6 @@ import Litepicker from 'litepicker';
       // for each vechicle, as repped by index in omni.val props, check inputted ppl no is within range, n then the same for days, and for the index that passes the test, push that (i as .keyz index === car) to options arr
       if (ppl.no >= omni.vals.ppl[i][0] && ppl.no <= omni.vals.ppl[i][1] && date.noEle.valueAsNumber >= omni.vals.days[i][0] && date.noEle.valueAsNumber <= omni.vals.days[i][1]) {
         mechanic.opts.push(omni.keyz[i]);
-        console.log(mechanic.opts, i);
       }
     }
   }
@@ -284,9 +286,9 @@ import Litepicker from 'litepicker';
     caryard: document.querySelector('.vechs'),
     opts: [],
     anicar: init.w * 2,
+    names: ['motorbike', 'small car', 'large car', 'campervan'],
     init() {
       this.txt.style.left = `${init.w * 2}px`;
-      // this.caryard.style.left = `${init.w * 2 + this.anicar}px`;
     },
     present() {
       // since must(ang) alr on screen as default, a. don't wanna try add it again and b. can drive offscreen into the abyss
@@ -305,6 +307,7 @@ import Litepicker from 'litepicker';
         window.clearTimeout();
         // not strictly necessary but good practice ig
       }
+      console.log(this.opts);
       this.opts.forEach(x => {
         let c = new Image();
         c.src = `../img/${x}.png`;
@@ -317,18 +320,15 @@ import Litepicker from 'litepicker';
   };
 
   function carChat() {
-    // tog 2 hide info on second click
     let clkd = [];
     let infoCont = document.querySelector('.v-info');
-
     [...Array.from(mechanic.caryard.children), car.thingItself].forEach(x => {
-    // spread ... makes a flattened list of an iterable literal, super cool n handy here otherwise end up w a 2d arr
+    // spread ... makes a flattened list of an iterable literal, super cool n handy here otherwise end up w a 2d arr -- don't want to push default car into caryard, since this guy requires special treatment, but also needs to be included here
       x.addEventListener('click', function(e) {
         clkd.push(x);
         if (clkd.length > 1) {
           infoCont.removeChild(infoCont.firstChild);
         }
-
         // if (clkd[clkd.length - 1] === clkd[clkd.length - 2]) {
         //   console.log('hdi', clkd[clkd.length - 1], clkd[clkd.length - 2]);
         //   while (infoCont.lastChild) {
@@ -342,7 +342,7 @@ import Litepicker from 'litepicker';
         newD.classList.add('wrapper', 'block', 'manu-facts', `${x.classList[1]}`);
         infoCont.appendChild(newD);
 
-        newD.textContent = `${omni.txt[k]}: \r\n`;
+        newD.textContent = `${mechanic.names[k]}: \r\n`;
         newD.textContent += `$${omni.vals.coin[k] * date.noEle.valueAsNumber} for your ${date.noEle.valueAsNumber} days away`;
 
       }, false);
@@ -353,23 +353,24 @@ import Litepicker from 'litepicker';
 
   // _*_*_*_*_*_*_*_*_| HANDY DANDY FUNCS |_*_*_*_*_*_*_*_*_*_
 
-  function animate() {
+  function animate(dirc) {
+    // dirc if -1 goes back (neg * pos = neg), if 1 forward
+    // ghost();
     anime({
       targets: car.thingItself,
-      translateX: 80 * signs.page,
+      translateX: (80 * signs.page),
       easing: 'easeOutExpo',
       duration: 3000
     });
     anime({
       targets: inpBits,
-      translateX: -(900 * signs.page + signs.page * 100),
-      easing: 'easeOutQuad',
+      translateX: -((init.w / 1.1) * signs.page + signs.page * 120),
+      easing: 'easeOutExpo',
       duration: 1500
     });
     anime({
       targets: road,
       animark: 800 * signs.page,
-      // round: 1,
       easing: 'easeOutExpo',
       duration: 2750,
       update: function() {
@@ -395,78 +396,13 @@ import Litepicker from 'litepicker';
         duration: 3000
       });
     }
+    anime({
+      targets: signs.
+      anisign: () * signs.page
+    })
     signs.page++;
-    road.animark = 0;
-    // mechanic.anicar = -init.w;
+    // road.animark = 0;
   }
-
-  // if (signs.page === 2) {
-  //   Object.defineProperty(this, 'exists', {value: 1, writable: true});
-  //   // this is to let other objs know that there's a carpark in the way of where they wanna go
-  //   ctx.fillStyle = 'black';
-  //   ctx.fillRect(init.w / 2, road.y - 3.3, 100, road.h);
-  //   // a sneaky black rect to cover where the carpark curb crosses over the road
-  //   anime({
-  //     targets: carpark,
-  //     anipark: 0,
-  //     // round: 1,
-  //     easing: 'linear',
-  //     duration: 2750,
-  //     update: function() {
-  //       carpark.init();
-  //       // carpark.placeCars();
-  //     }
-  //   });
-  // }
-
-  // let carpark = {
-  //   colours: ['#9ca297', '#b1bab0', 'black'],
-  //   vechCont: document.querySelector('.cp-cars'),
-  //   vechs: ['mb', 'cpv', 'mini'],
-  //   // 2 draw curb n carpark respectively
-  //   anipark: init.w * 3,
-  //   tY: 0,
-  //   // pos on page was written first so easily 2 subtract from pos on screen to animate rather than the other way around
-  //   // fractions man >:(
-  //   init() {
-  //     for (let i = 0; i < 3; i++) {
-  //       // not rly sure why i make things so complicated
-  //       if (i) {
-  //         ctx.translate(0, 3.3);
-  //       } else {
-  //         ctx.translate(0, -3.3);
-  //       }
-  //
-  //       ctx.fillStyle='red';
-  //       ctx.fillRect(0+this.anipark, this.tY, 1000, 1000);
-  //
-  //       ctx.beginPath();
-  //       ctx.fillStyle = `${this.colours[i]}`;
-  //       ctx.moveTo((init.w / 2) + this.anipark, init.h);
-  //       // ctx.lineTo(init.w / 2 + init.w / 5, init.h / 2);
-  //       // cause its curvy n translated with curbies starting x gonna b a lil different
-  //       ctx.bezierCurveTo(init.w / 2 + this.anipark, init.h, (init.w / 2) + (init.w / 18) + this.anipark, init.h - init.h / 3, (init.w / 2) + (init.w / 7) + this.anipark, init.h - init.h / 3);
-  //       // annoying that this method can't take more than one return from inProptn
-  //       ctx.lineTo(init.w + this.anipark, init.h - init.h / 3);
-  //       ctx.lineTo(init.w + this.anipark, init.h);
-  //       ctx.closePath();
-  //       ctx.fill();
-  //       console.log(this.anipark, (init.w / 2) );
-  //       // i cannot BElieve setting vals to props within prop funcs doesn't change outer val ig it makes sense but like funcs should b able 2 change more global vars than themselves?? is this what;s happening w grass arrs?
-  //     }
-  //   },
-  //   placeCars() {
-  //     // redo when cpvan acc done lol
-  //     for (let i = 0; i < this.vechs.length; i++) {
-  //       let v = new Image(300, 200);
-  //       v.src = `../img/${this.vechs[i]}.png`;
-  //       this.vechCont.appendChild(v);
-  //     }
-  //   },
-  //   plant() {
-  //
-  //   }
-  // };
 
   // mapboxgl.accessToken = 'pk.eyJ1IjoibGFuYWxkZXIiLCJhIjoiY2tweGlqd2RmMWVyajJ2b2lrejYzbDZ5diJ9.ELtetZkKKBOunIgDPByWYQ';
   //
@@ -493,7 +429,8 @@ import Litepicker from 'litepicker';
   function tailor() {
     init.setScl();
     road.markings();
-    grass.draw();
+    car.position();
+    // grass.draw();
     date.init();
     mechanic.init();
     // geo.init();
@@ -507,11 +444,29 @@ import Litepicker from 'litepicker';
 
    function vp2px(d, vw) {
     // d T = vw/h -> px, d F reverse
-    return d ? Math.round((window.innerHeight * vw) / 100)
-      : Math.round((vw * 100 / window.innerWidth) * 100);
+    return d ? Math.round((init.w * vw) / 100)
+      : Math.round((vw * 100 / init.w) * 100);
   }
 
-  signs.pS[0].addEventListener('click', animate, false);
+  signs.pS[0].addEventListener('click', function() {
+    if (signs.page === 1 && ppl.no === 0) {
+      document.querySelector('.ppl-msg').textContent = "Cannot rent a car for nobody! Select at least 1 person";
+    } else if ($('.day-no').parsley().isValid()){
+      animate();
+    }
+  }, false);
+
+  // function ghost() {
+  //   inpBits.forEach(x => {
+  //     console.log(x.style.left, x.style.right, x.style.transform);
+  //     if (x.style.left > init.w || x.style.transform < 0) {
+  //       x.classList.add('hide');
+  //     } else {
+  //       x.classList.remove('hide');
+  //     }
+  //   })
+  // }
+
   picker.ui.addEventListener('click', datedealer, false);
 
   // cache was annoying
