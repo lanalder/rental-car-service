@@ -91,49 +91,7 @@ import Litepicker from 'litepicker';
         gap = inProptn(0, 9) + (inProptn(0, 9) / 1.5);
         // first gap val is just the offset from x=0, after that offset from last line needs 2 include the prev line width
       }
-      ppl.draw();
-    }
-  };
-
-  let signs = {
-    page: 1,
-    pS: [document.querySelector('.page-sign-1'), document.querySelector('.page-sign-2')],
-    get txt() { return [['Go back ←', `Q. ${this.page - 1} of 4`], ['Onwards →', `Q. ${this.page} of 4`]]; },
-    // get just used so can reference this.page, prop defs can't ref each other it seems bc they're all read in one initialising sweep, unlike methods/get, which happen after obj has been processed
-    anisign: 0,
-    // height is not responsive atm!!
-    eraser: [[], []],
-    get yPos() {
-      return (road.y - (road.linH / 3) * 1.5)-inProptn(1, 6); },
-    draw() {
-      if (this.eraser) {
-        this.erase();
-      }
-      ctx.fillStyle = '#1A1D22';
-
-      // for first sign (gets confusing since signs alternate whether they're prev or next so there's the illusion of driving by them (better than making a whole bunch of one-off use signs tho), but 1st sign (pS[0]) always the sign most to the left)
-      ctx.fillRect(init.w - inProptn(0, 21) - this.anisign, this.yPos, inProptn(0, 150), inProptn(1, 6));
-      this.pS[0].style.top = `${this.yPos - this.pS[0].clientHeight}px`;
-      this.pS[0].style.left = `${init.w - inProptn(0, 21) - this.pS[0].clientWidth - this.anisign}px`;
-
-      this.eraser[0].push(init.w - inProptn(0, 21) - this.anisign - 3, this.yPos - 3, inProptn(0, 150) + 5, inProptn(1, 6) + 5);
-
-      // 2nd sign
-      ctx.fillRect(init.w * 2 - inProptn(0, 3) - this.anisign, this.yPos, inProptn(0, 150), inProptn(1, 6));
-      this.pS[1].style.top = `${this.yPos - this.pS[1].clientHeight}px`;
-      this.pS[1].style.left = `${init.w * 2 - inProptn(0, 3) - this.pS[1].clientWidth - this.anisign}px`;
-
-      this.eraser[1].push(init.w * 2 - inProptn(0, 3) - this.anisign - 3, this.yPos - 3, inProptn(0, 150) + 5, inProptn(1, 6) + 5);
-
-      // next obj init
-      // car.position();
-    },
-    erase() {
-      ctx.clearRect(this.eraser[0][this.eraser[0].length - 4], this.eraser[0][this.eraser[0].length - 3], this.eraser[0][this.eraser[0].length - 2], this.eraser[0][this.eraser[0].length - 1]);
-
-      ctx.clearRect(this.eraser[1][this.eraser[1].length - 4], this.eraser[1][this.eraser[1].length - 3], this.eraser[1][this.eraser[1].length - 2], this.eraser[1][this.eraser[1].length - 1]);
-
-      this.eraser = [[], []];
+      // ppl.draw();
     }
   };
 
@@ -181,6 +139,62 @@ import Litepicker from 'litepicker';
     }
   };
 
+  // _*_*_*_*_*_*_*_*_| PAGE SIGNS (next / prev) |_*_*_*_*_*_*_*_*_*_
+
+  let signs = {
+    page: 1,
+    pS: [document.querySelector('.page-sign-1'), document.querySelector('.page-sign-2')],
+    anisign: 0,
+    signPos: [init.w - inProptn(0, 21), init.w * 2 - inProptn(0, 3)],
+    eraser: [[], []],
+    // canvas sucks to animate, posts logged here so can be cleared when they move
+    get txt() {
+      return [['Go back ←', `Q. ${this.page - 1} of 4`], ['Onwards →', `Q. ${this.page} of 4`]]; },
+    // get just used so can reference this.page, prop defs can't ref each other it seems bc they're all read in one initialising sweep, unlike methods/get, which happen after obj has been processed
+    draw() {
+      if (this.eraser) {
+        this.erase();
+      }
+      ctx.fillStyle = '#1A1D22';
+      for (let i = 0; i < 2; i++) {
+        ctx.fillRect(this.signPos[i] - this.anisign, (road.y - (road.linH / 3) * 1.5) - inProptn(1, 6), inProptn(0, 150), inProptn(1, 6));
+        this.eraser[i].push(this.signPos[i] - this.anisign - 3, (road.y - (road.linH / 3) * 1.5) - inProptn(1, 6) - 3, inProptn(0, 150) + 5, inProptn(1, 6) + 5);
+        this.pS[i].style.top = `${(road.y - (road.linH / 3) * 1.5)-inProptn(1, 6) - this.pS[i].clientHeight}px`;
+        this.pS[i].style.left = `${this.signPos[i] - this.pS[i].clientWidth - this.anisign}px`;
+      }
+    },
+    erase() {
+      this.eraser.forEach(x => {
+        ctx.clearRect(x[0], x[1], x[2], x[3]);
+      });
+      this.eraser = [[], []];
+    }
+  };
+
+  signs.pS[0].addEventListener('click', function() {
+    if (signs.page === 1 && ppl.no === 0) {
+      document.querySelector('.ppl-msg').textContent = "Cannot rent a car for nobody! Select at least 1 person";
+    } else if (signs.page === 1 && ppl.no > 0) {
+      animate(1);
+    } else if (signs.page === 2 ) {
+      animate(0);
+      Array.from(signs.pS[0].children).forEach(x => {
+        x.textContent = signs.txt[1][Array.from(signs.pS[0].children).indexOf(x)];
+      });
+    }
+  }, false);
+
+  signs.pS[1].addEventListener('click', function() {
+    if (signs.page === 2 && $('.day-no').parsley().isValid()) {
+      animate(1);
+    } else if (signs.page === 3) {
+      animate(0);
+      Array.from(signs.pS[1].children).forEach(x => {
+        x.textContent = signs.txt[0][Array.from(signs.pS[1].children).indexOf(x)];
+      });
+    }
+  }, false);
+
   // _*_*_*_*_*_*_*_*_| Pg. 1 PEOPLE |_*_*_*_*_*_*_*_*_*_
 
   let ppl = {
@@ -193,14 +207,15 @@ import Litepicker from 'litepicker';
         // so that on resize, last little ppl can be whooshed away n new ones made
         this.cont.lastChild.remove();
       }
+      console.log('hello');
       for (let i = 0; i < 6; i++) {
-        this.chrs[i] = new Image();
+        this.chrs[i] = new Image(43, 139);
         this.chrs[i].src = `../img/${this.picker[i%2]}.png`;
         poke(this.chrs[i]);
         // poke adds click events 2 them
         this.cont.appendChild(this.chrs[i]);
       }
-      signs.draw();
+      // signs.draw();
     },
     no: 0
   };
@@ -247,7 +262,7 @@ import Litepicker from 'litepicker';
     init() {
       picker.ui.classList.add('block', 'inline');
       this.cont.style.left = `${init.w}px`;
-      this.cont.style.width = `${picker.ui.clientWidth + 18}px`;
+      this.cont.style.padding = `${inProptn(1, 0.005)}px`;
       // i quickly became cssphobic
       this.txtEle.textContent = `${this.humanFriendly(this.inst[0])} until ${this.humanFriendly(this.inst[1])}`;
       $('.litepicker').click(function() {
@@ -397,7 +412,7 @@ import Litepicker from 'litepicker';
       targets: inpBits,
       translateX: dirc * (-((init.w / 1.1) * (signs.page - 1) + ((signs.page - 1) * 120))),
       // idk what mathematically is going on here but random sums haven't failed me yet
-      easing: 'easeOutExpo',
+      easing: 'linear',
       duration: 1500
     });
     anime({
@@ -438,12 +453,14 @@ import Litepicker from 'litepicker';
           signs.draw();
         }
       });
-
       let peas = [Array.from(signs.pS[0].children), Array.from(signs.pS[1].children)];
+      if (signs.page % 2) {
+
+      }
       peas.forEach(x => {
         x.forEach(y => {
           y.textContent = signs.txt[peas.indexOf(x)][x.indexOf(y)];
-          // blame linter on how abstract this got, it didn't like when peas was defined in loop something ab scope and confusing semantics
+          // blame linter on how abstract the indexing got, it didn't like when peas was defined in loop something ab scope and confusing semantics
         });
       });
     console.log(signs.page);
@@ -477,6 +494,8 @@ import Litepicker from 'litepicker';
   function tailor() {
     init.setScl();
     road.markings();
+    ppl.draw();
+    signs.draw();
     car.position();
     // grass.draw();
     date.init();
@@ -495,30 +514,6 @@ import Litepicker from 'litepicker';
     return d ? Math.round((init.w * vw) / 100)
       : Math.round((vw * 100 / init.w) * 100);
   }
-
-  signs.pS[0].addEventListener('click', function() {
-    if (signs.page === 1 && ppl.no === 0) {
-      document.querySelector('.ppl-msg').textContent = "Cannot rent a car for nobody! Select at least 1 person";
-    } else if (signs.page === 1 && ppl.no > 0) {
-      animate(1);
-      // signs.page++;
-    } else if (signs.page !== 1) {
-      animate(0);
-      // signs.page--;
-      Array.from(signs.pS[0].children).forEach(x => {
-        x.textContent = signs.txt[1][Array.from(signs.pS[0].children).indexOf(x)];
-      });
-    }
-  }, false);
-
-  signs.pS[1].addEventListener('click', function() {
-    if (signs.page === 2 && $('.day-no').parsley().isValid()) {
-      // chosen1();
-      // mechanic.present();
-      animate(1);
-      // signs.page++;
-    }
-  }, false);
 
   // function ghost() {
   //   inpBits.forEach(x => {
