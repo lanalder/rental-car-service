@@ -30,10 +30,10 @@ import Litepicker from 'litepicker';
   ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
   // so that one canvas px = one physical px, otherwise on big new retina screens or whatnot canvas pxs can be blurred
 
-  var inpBits = Array.from(document.querySelectorAll('.inp-el'));
+  const inpBits = Array.from(document.querySelectorAll('.inp-el'));
   // all the input-taking elements so can carousel them round n treat their values appropriately
 
-  let init = {
+  const init = {
     get w() { return window.innerWidth; },
     get h() { return window.innerHeight; },
     // getter used so that page is sorta reponsive w/o css, & so coords of elements are relative to user and not actual page position (ideally)
@@ -52,8 +52,8 @@ import Litepicker from 'litepicker';
 
   // _*_*_*_*_*_*_*_*_| INITIAL OBJS |_*_*_*_*_*_*_*_*_*_
 
-  let road = {
-    // these getters (methods ig) are for the more complex calcs so the code below isn't an instant migraine, i mean it's still messy but road's h always inProtn(1, 7) and the line w inProtn(0, 9)
+  const road = {
+    // these getters (methods ig) are for the more messy calcs so the code below isn't an instant migraine, n road's h always inProtn(1, 7) and the line w inProtn(0, 9)
     get y() { return init.h - inProptn(1, 7) * 1.5; },
     get linY() { return this.y + (inProptn(1, 7) / 3); },
     get linH() { return inProptn(1, 7) / 12; },
@@ -110,7 +110,7 @@ import Litepicker from 'litepicker';
     // each grass img is 50x50 so the amt needed 2 fill up screen is w/50
     roots: new Array(inProptn(0, 50)),
     // for holding each img
-    soil: new Array(4),
+    soil: [0, 0, 0, 0],
     // for each line of grass, differently positioned
     get lawnmower() {
        Array.from(document.querySelector('.grass-cont').children); },
@@ -149,7 +149,7 @@ import Litepicker from 'litepicker';
     eraser: [[], []],
     // canvas sucks to animate, posts logged here so can be cleared when they move
     get txt() {
-      return [['Go back ←', `Q. ${this.page - 1} of 4`], ['Onwards →', `Q. ${this.page} of 4`]]; },
+      return [['Go back ←', `Q. ${this.page - 1} of 4`], ['Onwards →', `Q. ${this.page} of 4`], ['Go back ←', `Q. ${this.page - 1} of 4`]]; },
     // get just used so can reference this.page, prop defs can't ref each other it seems bc they're all read in one initialising sweep, unlike methods/get, which happen after obj has been processed
     draw() {
       if (this.eraser) {
@@ -172,15 +172,15 @@ import Litepicker from 'litepicker';
   };
 
   signs.pS[0].addEventListener('click', function() {
+    // since signs 1 n 2 are not always next n prev respectively, some conditions for how they act:
     if (signs.page === 1 && ppl.no === 0) {
+      // on pg.1, validator; didn't use parsley here since input was a little less conventional than for daterange
       document.querySelector('.ppl-msg').textContent = "Cannot rent a car for nobody! Select at least 1 person";
     } else if (signs.page === 1 && ppl.no > 0) {
       animate(1);
     } else if (signs.page === 2 ) {
+      // animate back a page on pg.2 since sign 0 now prev
       animate(0);
-      Array.from(signs.pS[0].children).forEach(x => {
-        x.textContent = signs.txt[1][Array.from(signs.pS[0].children).indexOf(x)];
-      });
     }
   }, false);
 
@@ -188,10 +188,8 @@ import Litepicker from 'litepicker';
     if (signs.page === 2 && $('.day-no').parsley().isValid()) {
       animate(1);
     } else if (signs.page === 3) {
-      animate(0);
-      Array.from(signs.pS[1].children).forEach(x => {
-        x.textContent = signs.txt[0][Array.from(signs.pS[1].children).indexOf(x)];
-      });
+      animate(0.99);
+      // numbers are funky... that lets us translateX back a third (i.e. a full page) backwards, i can't say i didn't trial n error finding that magic decimal nor that i know exactly why it's 0.99, except that (0.99 * var) would return (var - 0.var) right? and it needs to be a decimal with the 0 in front so that transX < current value, and since 0.99 is closest we can get to 1 without being an integer and taking us forwards this gives us pretty much the transX value of last animation but in a backwards direction?
     }
   }, false);
 
@@ -396,15 +394,15 @@ import Litepicker from 'litepicker';
   function animate(dirc) {
     console.log(signs.page);
     // dirc if 0 goes back (since transX becomes 0 having been times'd by it, ie. og. pos), if 1 forward
-    // ghost();
-    if (dirc) {
+    if (dirc === 1) {
       signs.page++;
     } else {
       signs.page--;
     }
     anime({
       targets: car.thingItself,
-      translateX: (80 * dirc ) * signs.page,
+      translateX: (80 * dirc ) * (signs.page),
+      // sings.pg + 1 - dirc is
       easing: 'easeOutExpo',
       duration: 3000
     });
@@ -443,7 +441,6 @@ import Litepicker from 'litepicker';
         duration: 3000
       });
     }
-    // if (signs.page % 2) {
       anime({
         targets: signs,
         anisign: dirc * ((init.w / 1.3) * (signs.page - 1)),
@@ -454,16 +451,15 @@ import Litepicker from 'litepicker';
         }
       });
       let peas = [Array.from(signs.pS[0].children), Array.from(signs.pS[1].children)];
-      if (signs.page % 2) {
-
-      }
+      // airbnb 4.4 says use spread over array.from however good reason to not listen to that here is we need a 2d array, n spread flattens it all
       peas.forEach(x => {
         x.forEach(y => {
-          y.textContent = signs.txt[peas.indexOf(x)][x.indexOf(y)];
+          y.textContent = signs.txt[peas.indexOf(x) + (signs.page % 2)][x.indexOf(y)];
           // blame linter on how abstract the indexing got, it didn't like when peas was defined in loop something ab scope and confusing semantics
+          // the + signs.page % 2 is so that the text of signs reflects the back n forth nature of if they're prev or next at that page
         });
       });
-    console.log(signs.page);
+    console.log(peas, signs.page);
     // }
     // signs.page++;
     // road.animark = 0;
