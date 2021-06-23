@@ -1,4 +1,5 @@
 @import '../node_modules/litepicker/dist/css/litepicker.css';
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300&display=swap');
 
 body {
   overflow: hidden;
@@ -7,7 +8,8 @@ body {
   background-size: cover;
   /* z-index: -200;
   position: fixed; */
-  font-family: 'Raleway', sans-serif !important;
+  /* font-family: 'Raleway', sans-serif !important; */
+  font-family: 'IBM Plex Sans', sans-serif;
   /* font-weight: bolder !important; */
 }
 
@@ -52,15 +54,18 @@ p {
 .inp-cont {
   display: flex;
   flex-direction: row;
-  margin-top: 1vh !important;
+  /* margin-top: 1vh !important; */
   align-items: center;
+  padding-left: 20%;
+  padding-right: 10%;
+  padding-bottom: 5%;
 }
 
 .inp-el {
   position: absolute;
   /* margin: 19vh 20vw 17vh 23vw; */
-  margin-left: 30vw;
-  margin-top: 27vh;
+  margin-left: 29vw;
+  margin-top: 15vh;
 
   /* top: 25%;
   left: 30%; */
@@ -71,7 +76,7 @@ p {
 .ppl-no {
   float: right;
   height: 38px;
-  margin-top: 13vh !important;
+  /* margin-top: 13vh !important; */
   /* background-color: #b3bd20 !important; */
   /* bottom: 2vh !important; */
   /* margin-bottom: 5vh !important; */
@@ -99,10 +104,11 @@ p {
 }
 
 .ppl {
-  height: 30vh;
+  height: 45vh;
   width: 38vw;
-  font-size: 2rem !important;
-  font-weight: 200 !important;
+  font-size: 2.1rem !important;
+  /* font-weight: 200 !important; */
+  /* font-weight: bolder; */
 }
 
 .day-no {
@@ -121,12 +127,12 @@ p {
 
 .page-sign-1,
 .page-sign-2 {
-  height: 7vh;
-  width: 13vw;
+  height: 9vh;
+  width: 12vw;
 }
 
 .page-sign-cont p{
-  font-size: 1.4rem !important;
+  font-size: 1.2rem !important;
 }
 
 /* .date {
@@ -190,7 +196,7 @@ p {
 
 .page-sign-cont > div {
   position: absolute;
-  padding: 0.3vh !important;
+  padding: 1vh 1vw 1vh 1vw !important;
 }
 
 .v-tit {

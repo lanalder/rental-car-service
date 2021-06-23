@@ -1,8 +1,8 @@
 body {
     --block-text-color: #222;
-    --block-background-color: #D9E9C4;
+    --block-background-color: #fff;
     --block-accent-color: #00ae86;
-    --block-shadow-color: #444;
+    --block-shadow-color: #000;
 }
 .block {
     display: block;

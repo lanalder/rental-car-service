@@ -149,7 +149,7 @@ import Litepicker from 'litepicker';
     eraser: [[], []],
     // canvas sucks to animate, posts logged here so can be cleared when they move
     get txt() {
-      return [['Go back ←', `Q. ${this.page - 1} of 4`], ['Onwards →', `Q. ${this.page} of 4`], ['Go back ←', `Q. ${this.page - 1} of 4`]]; },
+      return [['Go back ←', `Q. ${this.page - 1} of 4`], ['Next →', `Q. ${this.page} of 4`], ['Go back ←', `Q. ${this.page - 1} of 4`]]; },
     // get just used so can reference this.page, prop defs can't ref each other it seems bc they're all read in one initialising sweep, unlike methods/get, which happen after obj has been processed
     draw() {
       if (this.eraser) {
@@ -175,7 +175,7 @@ import Litepicker from 'litepicker';
     // since signs 1 n 2 are not always next n prev respectively, some conditions for how they act:
     if (signs.page === 1 && ppl.no === 0) {
       // on pg.1, validator; didn't use parsley here since input was a little less conventional than for daterange
-      document.querySelector('.ppl-msg').textContent = "Cannot rent a car for nobody! Select at least 1 person";
+      document.querySelector('.ppl-msg').textContent = "Cannot rent a car for nobody! Please select at least 1 person";
     } else if (signs.page === 1 && ppl.no > 0) {
       animate(1);
     } else if (signs.page === 2 ) {
@@ -205,12 +205,12 @@ import Litepicker from 'litepicker';
         // so that on resize, last little ppl can be whooshed away n new ones made
         this.cont.lastChild.remove();
       }
-      console.log('hello');
       for (let i = 0; i < 6; i++) {
         this.chrs[i] = new Image(43, 139);
         this.chrs[i].src = `../img/${this.picker[i%2]}.png`;
         poke(this.chrs[i]);
         // poke adds click events 2 them
+        glow(this.chrs[i]);
         this.cont.appendChild(this.chrs[i]);
       }
       // signs.draw();
@@ -220,21 +220,21 @@ import Litepicker from 'litepicker';
 
   function poke(el) {
     el.addEventListener('click', function() {
-      if (el.src.includes('inblack')) {
+      if (this.src.includes('inblack')) {
         ppl.no--;
         document.querySelector('.ppl-no').textContent = `${ppl.no}`;
         // lucky that the names r the same length!
-        el.src = el.attributes[0].textContent.substring(0, 12) + el.attributes[0].textContent.substring(19);
-      } else if (el.src.includes('julie')) {
+        this.src = this.attributes[0].textContent.substring(0, 16) + this.attributes[0].textContent.substring(23);
+      } else if (this.src.includes('julie')) {
         ppl.no++;
         document.querySelector('.ppl-no').textContent = `${ppl.no}`;
-        el.src = '../img/julieinblack.png';
+        this.src = '../img/glowjulieinblack.png';
       } else {
         ppl.no++;
         document.querySelector('.ppl-no').textContent = `${ppl.no}`;
-        el.src = '../img/spikeinblack.png';
+        this.src = '../img/glowspikeinblack.png';
       }
-    });
+    }, false);
   }
 
   // _*_*_*_*_*_*_*_*_| Pg. 2 CALENDAR |_*_*_*_*_*_*_*_*_*_
@@ -351,6 +351,7 @@ import Litepicker from 'litepicker';
         c.src = `../img/${x}.png`;
         c.classList.add('v', `${x}`);
         c.style.right = `${-init.w}px`;
+        glow(c);
         this.caryard.appendChild(c);
         carChat();
       });
@@ -364,6 +365,7 @@ import Litepicker from 'litepicker';
     // spread ... makes a flattened list of an iterable literal, super cool n handy here otherwise end up w a 2d arr -- don't want to push default car into caryard, since this guy requires special treatment, but also needs to be included here
       x.addEventListener('click', function(e) {
         clkd.push(x);
+        // glow(x);
         if (clkd.length > 1) {
           infoCont.removeChild(infoCont.firstChild);
         }
@@ -392,7 +394,6 @@ import Litepicker from 'litepicker';
   // _*_*_*_*_*_*_*_*_| HANDY DANDY FUNCS |_*_*_*_*_*_*_*_*_*_
 
   function animate(dirc) {
-    console.log(signs.page);
     // dirc if 0 goes back (since transX becomes 0 having been times'd by it, ie. og. pos), if 1 forward
     if (dirc === 1) {
       signs.page++;
@@ -459,7 +460,6 @@ import Litepicker from 'litepicker';
           // the + signs.page % 2 is so that the text of signs reflects the back n forth nature of if they're prev or next at that page
         });
       });
-    console.log(peas, signs.page);
     // }
     // signs.page++;
     // road.animark = 0;
@@ -523,6 +523,20 @@ import Litepicker from 'litepicker';
   // }
 
   picker.ui.addEventListener('click', datedealer, false);
+
+  function glow(el) {
+    'mouseover mouseleave'.split(' ').forEach(x => {
+      el.addEventListener(x, function() {
+        let guide = this.attributes.src.nodeValue;
+        if (guide.includes('glow')) {
+          this.src = `../img/${guide.slice(11)}`;
+        } else {
+          this.src = `../img/glow${guide.slice(7)}`;
+          // glow is always 4 chrs long
+        }
+      });
+    }, false);
+  }
 
   // cache was annoying
   date.noEle.value = 1;
