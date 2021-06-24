@@ -101,6 +101,7 @@ import Litepicker from 'litepicker';
     position() {
       this.thingItself.style.bottom = `${inProptn(1, 7) * 1.1}px`;
       // this! is properly not reponsive
+      glow(el)
       grass.draw();
     }
   };
@@ -149,7 +150,7 @@ import Litepicker from 'litepicker';
     eraser: [[], []],
     // canvas sucks to animate, posts logged here so can be cleared when they move
     get txt() {
-      return [['Go back ←', `Q. ${this.page - 1} of 4`], ['Next →', `Q. ${this.page} of 4`], ['Go back ←', `Q. ${this.page - 1} of 4`]]; },
+      return [['← Back', `Q. ${this.page - 1} of 4`], ['Next →', `Q. ${this.page} of 4`], ['← Back', `Q. ${this.page - 1} of 4`]]; },
     // get just used so can reference this.page, prop defs can't ref each other it seems bc they're all read in one initialising sweep, unlike methods/get, which happen after obj has been processed
     draw() {
       if (this.eraser) {
@@ -160,7 +161,7 @@ import Litepicker from 'litepicker';
         ctx.fillRect(this.signPos[i] - this.anisign, (road.y - (road.linH / 3) * 1.5) - inProptn(1, 6), inProptn(0, 150), inProptn(1, 6));
         this.eraser[i].push(this.signPos[i] - this.anisign - 3, (road.y - (road.linH / 3) * 1.5) - inProptn(1, 6) - 3, inProptn(0, 150) + 5, inProptn(1, 6) + 5);
         this.pS[i].style.top = `${(road.y - (road.linH / 3) * 1.5)-inProptn(1, 6) - this.pS[i].clientHeight}px`;
-        this.pS[i].style.left = `${this.signPos[i] - this.pS[i].clientWidth - this.anisign}px`;
+        this.pS[i].style.left = `${this.signPos[i] - (this.pS[i].clientWidth / 1.3) - this.anisign}px`;
       }
     },
     erase() {
@@ -216,7 +217,30 @@ import Litepicker from 'litepicker';
       // signs.draw();
     },
     no: 0
+    // no: document.querySelector('.ppl-no')
   };
+
+  // function poke(el) {
+  //   el.addEventListener('click', function() {
+  //     if (el === ppl.no) {
+  //       let c = 0;
+  //       ppl.chrs.forEach(x => {
+  //         if (x.src.includes('inblack')) {
+  //           c++;
+  //         }
+  //       });
+  //       if (c !== ppl.no.valueAsNumber) {
+  //         let d = c - ppl.no.valueAsNumber;
+  //         for (let i = 0; i < d; i++) {
+  //           ppl.chrs[i].src = `../img/${ppl.chrs[i].attributes.src.nodeValue.slice(0, 12)}inblack.png`;
+  //         }
+  //       }
+  //     } else {
+  //       let pars = this.attributes.src.nodeValue;
+  //       console.log(pars);
+  //     }
+  //   }, false);
+  // }
 
   function poke(el) {
     el.addEventListener('click', function() {
@@ -240,7 +264,7 @@ import Litepicker from 'litepicker';
   // _*_*_*_*_*_*_*_*_| Pg. 2 CALENDAR |_*_*_*_*_*_*_*_*_*_
 
   const picker = new Litepicker({
-    element: document.querySelector('.date'),
+    element: document.querySelector('.calendar'),
     startDate: new Date(),
     inlineMode: true,
     autoRefresh: true,
@@ -318,7 +342,7 @@ import Litepicker from 'litepicker';
   }
 
   let mechanic = {
-    txt: document.querySelector('.v-tit'),
+    txt: document.querySelector('.v-cont'),
     caryard: document.querySelector('.vechs'),
     opts: [],
     anicar: init.w * 2,
@@ -538,8 +562,10 @@ import Litepicker from 'litepicker';
     }, false);
   }
 
-  // cache was annoying
-  date.noEle.value = 1;
+  // poke(ppl.no);
+
+  // // cache was annoying
+  // date.noEle.value = 1;
 
   'load resize'.split(' ').forEach(function(e) {
     // rescale things on both page load n resize
