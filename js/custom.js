@@ -14,7 +14,7 @@ import Litepicker from 'litepicker';
 
   // obj to contain the transport dataset
   const omni = {
-    keyz: ['mb', 'mn', 'must', 'cpv'],
+    keyz: ['mb', 'mn', 'car', 'cpv'],
     // that which pairs car with vals below are the indices of above arr
     vals: {
       ppl: [[1, 1], [1, 2], [1, 5], [2, 6]],
@@ -30,22 +30,21 @@ import Litepicker from 'litepicker';
   ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
   // so that one canvas px = one physical px, otherwise on big new retina screens or whatnot canvas pxs can be blurred
 
-  const inpBits = Array.from(document.querySelectorAll('.inp-el'));
+  const inpBits = Array.from(document.querySelectorAll('.moving-blocks'));
   // all the input-taking elements so can carousel them round n treat their values appropriately
 
   const init = {
     get w() { return window.innerWidth; },
     get h() { return window.innerHeight; },
-    // getter used so that page is sorta reponsive w/o css, & so coords of elements are relative to user and not actual page position (ideally)
+    // getter used so that page is sorta reponsive w/o css, & so coords of elements are relative to user and not actual page width, which (site being a S.P.A) is way bigger than user can see at once
     setScl() {
       document.body.style.width = `${this.w}px`;
       document.body.style.height = `${this.h}px`;
-      // style used on html els and not for canvas, since canvas css doesn't determine actual available coords, but as an obj its size does this as well as set automatically size as an element (im p sure)
-      // canvas (as obj) default size 300x150 n if only change css, scales to that n is all blurred
+      // style used on html els and not for canvas, since canvas css doesn't determine actual available coords -- actual obj size defaults to 300x150 n if only css is changed it just scales from that n looks rly bad
       canvas.width = this.w;
       canvas.height = this.h;
-      // when init is called, sets off a domino effect of all the other objs that need 2 be initd
       // ghost();
+      // begin domino of other obj inits
       road.draw();
     }
   };
@@ -53,12 +52,12 @@ import Litepicker from 'litepicker';
   // _*_*_*_*_*_*_*_*_| INITIAL OBJS |_*_*_*_*_*_*_*_*_*_
 
   const road = {
-    // these getters (methods ig) are for the more messy calcs so the code below isn't an instant migraine, n road's h always inProtn(1, 7) and the line w inProtn(0, 9)
+    // road's h always inProptn(1, 7) and the line w inProptn(0, 9), getters below just used 2 make code more readable
     get y() { return init.h - inProptn(1, 7) * 1.5; },
     get linY() { return this.y + (inProptn(1, 7) / 3); },
     get linH() { return inProptn(1, 7) / 12; },
     animark: 0,
-    // this is for the anime func, the value is changed 2 whatever it's set at over there, which is equivalent as you'll see below 2 a translateX value (which can't simply b used bc of canvas, don't wanna move the whole thing but only some of its drawings)
+    // this is for the anime func, the value is changed 2 whatever it's set at over there, so equivalent 2 a translateX value (which can't simply b used bc of canvas, don't wanna move the whole thing but only some of its drawings)
     draw() {
       // drawing curbs first
       let shades = ['#9ca297', '#b1bab0'];
@@ -66,7 +65,6 @@ import Litepicker from 'litepicker';
         ctx.fillStyle = shades[i];
         if (i) {
           ctx.translate(0, 3.3);
-          // curbs r actually just 2 slightly different coloured rects behind the road, translate gives some very slight illusion of 3d, slightly
         }
         ctx.fillRect(0, this.y - (this.linH / 3) * 1.5, init.w, inProptn(1, 7) + (this.linH / 3) * (3 - i * 1.5));
       }
@@ -91,31 +89,37 @@ import Litepicker from 'litepicker';
         gap = inProptn(0, 9) + (inProptn(0, 9) / 1.5);
         // first gap val is just the offset from x=0, after that offset from last line needs 2 include the prev line width
       }
-      // ppl.draw();
     }
   };
 
   let car = {
-    thingItself: document.querySelector('.car'),
-    // a short wee thing but an obj in its own right mostly for anime
+    thingItself: null,
     position() {
+      if (document.querySelector('.car') == null) {
+        // not something 2 repeat on resize
+        let musty = new Image();
+        musty.src = '../img/car.png';
+        document.getElementsByTagName('body')[0].appendChild(musty);
+        this.thingItself = musty;
+        this.thingItself.classList.add('v', 'car');
+        // default car not just in html bc then the paths aren't quite the same for all imgs (needed 4 glow) and this was the quick n dirty way to fix that
+      }
       this.thingItself.style.bottom = `${inProptn(1, 7) * 1.1}px`;
-      // this! is properly not reponsive
-      glow(el)
+      this.thingItself.style.zIndex = 5;
       grass.draw();
     }
   };
 
   let grass = {
     amt: inProptn(0, 50),
-    // each grass img is 50x50 so the amt needed 2 fill up screen is w/50
+    // each grass img is 50x50 so the amount needed 2 fill up screen is w/50
     roots: new Array(inProptn(0, 50)),
     // for holding each img
     soil: [0, 0, 0, 0],
     // for each line of grass, differently positioned
     get lawnmower() {
        Array.from(document.querySelector('.grass-cont').children); },
-      // not sure i 'get' getters yet but not simply a prop nor has a return since both target a representation of arr and not the actual thing as it exists in the dom, maybe what the 'direct' part of getter is except as a method does the exact same, so still seems redundant...
+      // getters... eh but not simply a prop nor has a return since those give representation of arr and not the actual thing as it exists in the dom
     draw() {
       if (this.lawnmower) {
       // if empty, this is the first init; if true, mow all the old grass and redraw relevant to resize
@@ -140,44 +144,57 @@ import Litepicker from 'litepicker';
     }
   };
 
-  // _*_*_*_*_*_*_*_*_| PAGE SIGNS (next / prev) |_*_*_*_*_*_*_*_*_*_
+  // _*_*_*_*_*_*_*_*_| ROAD (page) SIGNS |_*_*_*_*_*_*_*_*_*_
 
   let signs = {
     page: 1,
     pS: [document.querySelector('.page-sign-1'), document.querySelector('.page-sign-2')],
+    trf: [document.querySelector('.grntrf'), document.querySelector('.redtrf')],
     anisign: 0,
-    signPos: [init.w - inProptn(0, 21), init.w * 2 - inProptn(0, 3)],
-    eraser: [[], []],
-    // canvas sucks to animate, posts logged here so can be cleared when they move
+    signPos: [init.w - inProptn(0, 6), init.w * 2 - inProptn(0, 3)],
+    eraser: [[], [], []],
+    // canvas sucks to animate, signposts logged here so can be cleared when they move
     get txt() {
-      return [['← Back', `Q. ${this.page - 1} of 4`], ['Next →', `Q. ${this.page} of 4`], ['← Back', `Q. ${this.page - 1} of 4`]]; },
-    // get just used so can reference this.page, prop defs can't ref each other it seems bc they're all read in one initialising sweep, unlike methods/get, which happen after obj has been processed
+      return [['← Back', `Q. ${this.page - 1} of 3`], ['Next →', `Q. ${this.page} of 3`], ['← Back', `Q. ${this.page - 1} of 3`]]; },
+    // get just used so can reference this.page, prop defs can't ref each other i guess bc they're all read in one initialising sweep instead of called after
     draw() {
       if (this.eraser) {
         this.erase();
       }
       ctx.fillStyle = '#1A1D22';
+      let sT = road.y - inProptn(1, 6) - (7.4 * init.h / 100);
+      let tX = this.trf[1].clientWidth / 0.87;
+      let h = inProptn(1, 5);
+      let w = inProptn(0, 150);
+      // doing what we can to ward off 3fps animation
       for (let i = 0; i < 2; i++) {
-        ctx.fillRect(this.signPos[i] - this.anisign, (road.y - (road.linH / 3) * 1.5) - inProptn(1, 6), inProptn(0, 150), inProptn(1, 6));
-        this.eraser[i].push(this.signPos[i] - this.anisign - 3, (road.y - (road.linH / 3) * 1.5) - inProptn(1, 6) - 3, inProptn(0, 150) + 5, inProptn(1, 6) + 5);
-        this.pS[i].style.top = `${(road.y - (road.linH / 3) * 1.5)-inProptn(1, 6) - this.pS[i].clientHeight}px`;
-        this.pS[i].style.left = `${this.signPos[i] - (this.pS[i].clientWidth / 1.3) - this.anisign}px`;
+        this.pS[i].style.top = `${sT}px`;
+        this.pS[i].style.left = `${this.signPos[i] - (this.pS[i].clientWidth / 1.98) - this.anisign}px`;
+        ctx.fillRect(this.signPos[i] - this.anisign, sT, w, h);
+        this.eraser[i].push(this.signPos[i] - this.anisign - 3, sT - 3, w + 5, h + 5);
+        this.trf[i].style.top = `${sT - ((19 * init.h) / 100)}px`;
+        this.trf[i].style.left = `${this.signPos[0] - this.trf[1].clientWidth * 1.6 - this.anisign}px`;
       }
+      ctx.fillRect(this.signPos[0] - tX - this.anisign, sT, w, h);
+      this.eraser[2].push(this.signPos[0] - tX - this.anisign - 3, sT - 3, w + 5, h + 5);
     },
     erase() {
       this.eraser.forEach(x => {
         ctx.clearRect(x[0], x[1], x[2], x[3]);
       });
-      this.eraser = [[], []];
+      this.eraser = [[], [], []];
+    },
+    lightChange() {
+      this.trf.forEach(x => x.classList.toggle('hide'));
     }
   };
 
   signs.pS[0].addEventListener('click', function() {
     // since signs 1 n 2 are not always next n prev respectively, some conditions for how they act:
-    if (signs.page === 1 && ppl.no === 0) {
-      // on pg.1, validator; didn't use parsley here since input was a little less conventional than for daterange
-      document.querySelector('.ppl-msg').textContent = "Cannot rent a car for nobody! Please select at least 1 person";
-    } else if (signs.page === 1 && ppl.no > 0) {
+    if (signs.page === 1 && ppl.no === 0 || ppl.no >= 7) {
+      // no animating till error resolved
+      valiPpl();
+    } else if (signs.page === 1 && ppl.no > 0 && ppl.no < 7) {
       animate(1);
     } else if (signs.page === 2 ) {
       // animate back a page on pg.2 since sign 0 now prev
@@ -187,10 +204,11 @@ import Litepicker from 'litepicker';
 
   signs.pS[1].addEventListener('click', function() {
     if (signs.page === 2 && $('.day-no').parsley().isValid()) {
+      glow(car.thingItself);
       animate(1);
     } else if (signs.page === 3) {
       animate(0.99);
-      // numbers are funky... that lets us translateX back a third (i.e. a full page) backwards, i can't say i didn't trial n error finding that magic decimal nor that i know exactly why it's 0.99, except that (0.99 * var) would return (var - 0.var) right? and it needs to be a decimal with the 0 in front so that transX < current value, and since 0.99 is closest we can get to 1 without being an integer and taking us forwards this gives us pretty much the transX value of last animation but in a backwards direction?
+      // 0.99 was trial n error n i don't rly understand why it translates exactly a full page backwards except maybe bc 0.99 * var would give us var - 0.var which is essentially a full animation cycle when var is transX, and as a decimal makes new animation value less than current position so brings page back instead of forward like in animate(1)
     }
   }, false);
 
@@ -199,66 +217,105 @@ import Litepicker from 'litepicker';
   let ppl = {
     cont: document.querySelector('.ppl-cont'),
     picker: ['julie', 'spike'],
-    // names of the little ppl, so that they can be subbed into img src
+    // names of the little ppl, so they can be subbed into img src
     chrs: new Array(6),
+    no: 0,
+    noEle: document.querySelector('.ppl-no'),
     draw() {
       while (this.cont.lastChild) {
-        // so that on resize, last little ppl can be whooshed away n new ones made
         this.cont.lastChild.remove();
       }
       for (let i = 0; i < 6; i++) {
         this.chrs[i] = new Image(43, 139);
         this.chrs[i].src = `../img/${this.picker[i%2]}.png`;
         poke(this.chrs[i]);
-        // poke adds click events 2 them
         glow(this.chrs[i]);
         this.cont.appendChild(this.chrs[i]);
       }
-      // signs.draw();
-    },
-    no: 0
-    // no: document.querySelector('.ppl-no')
+    }
   };
-
-  // function poke(el) {
-  //   el.addEventListener('click', function() {
-  //     if (el === ppl.no) {
-  //       let c = 0;
-  //       ppl.chrs.forEach(x => {
-  //         if (x.src.includes('inblack')) {
-  //           c++;
-  //         }
-  //       });
-  //       if (c !== ppl.no.valueAsNumber) {
-  //         let d = c - ppl.no.valueAsNumber;
-  //         for (let i = 0; i < d; i++) {
-  //           ppl.chrs[i].src = `../img/${ppl.chrs[i].attributes.src.nodeValue.slice(0, 12)}inblack.png`;
-  //         }
-  //       }
-  //     } else {
-  //       let pars = this.attributes.src.nodeValue;
-  //       console.log(pars);
-  //     }
-  //   }, false);
-  // }
 
   function poke(el) {
     el.addEventListener('click', function() {
       if (this.src.includes('inblack')) {
         ppl.no--;
-        document.querySelector('.ppl-no').textContent = `${ppl.no}`;
         // lucky that the names r the same length!
-        this.src = this.attributes[0].textContent.substring(0, 16) + this.attributes[0].textContent.substring(23);
-      } else if (this.src.includes('julie')) {
-        ppl.no++;
-        document.querySelector('.ppl-no').textContent = `${ppl.no}`;
-        this.src = '../img/glowjulieinblack.png';
+        this.src = this.attributes.src.nodeValue.slice(0, 16) + this.attributes.src.nodeValue.slice(23);
+        if (!ppl.no && !signs.trf[0].classList.contains('hide')) {
+          signs.lightChange();
+        }
       } else {
         ppl.no++;
-        document.querySelector('.ppl-no').textContent = `${ppl.no}`;
-        this.src = '../img/glowspikeinblack.png';
+        this.src =  this.attributes.src.nodeValue.slice(0, 16) + 'inblack.png';
+        if (signs.trf[0].classList.contains('hide')) {
+          signs.lightChange();
+        }
       }
+      ppl.noEle.value = ppl.no;
     }, false);
+  }
+
+  $(ppl.noEle).change(function() {
+    valiPpl();
+  });
+
+  function valiPpl() {
+    $(ppl.noEle).parsley().validate();
+    if (!$(ppl.noEle).parsley().isValid()) {
+      if (ppl.noEle.valueAsNumber > 6) {
+        document.querySelector('.ppl-msg').textContent = "Sorry! Rentals fit up to 6 people per vechicle";
+        if (!signs.trf[0].classList.contains('hide')) {
+          signs.lightChange();
+        }
+      } else {
+        document.querySelector('.ppl-msg').textContent = "Cannot rent a car for nobody! Please select at least 1 person";
+        ppl.chrs.forEach(x => {
+          if (x.src.includes('inblack')) {
+            x.src = x.attributes.src.nodeValue.slice(0, 12) + x.attributes.src.nodeValue.slice(19);
+          }
+        });
+        if (!signs.trf[0].classList.contains('hide')) {
+          signs.lightChange();
+        }
+      }
+      ppl.no = ppl.noEle.valueAsNumber;
+    } else {
+      if (signs.trf[0].classList.contains('hide')) {
+        signs.lightChange();
+      }
+      coordinate();
+      ppl.no = ppl.noEle.valueAsNumber;
+    }
+  }
+
+  function coordinate() {
+    let diff = 0;
+    let chsCh = [true, true, true, true, true, true];
+    // for finding index of ppl who need a wardrobe change
+    ppl.chrs.forEach(x => {
+      if (x.src.includes('inblack')) {
+        chsCh[ppl.chrs.indexOf(x)] = false;
+        // now we know who to skip
+        diff++;
+      }
+    });
+    diff = ppl.noEle.valueAsNumber - diff;
+    // and how far off the user inp is from clicked ppl
+    if (diff > 0) {
+      // ie. if inp field going up
+      for (let i = 0; i < diff; i++) {
+        let b = chsCh.indexOf(chsCh.find(x => x === true));
+        // changes first person not in black to selected
+        ppl.chrs[b].src = ppl.chrs[b].src =  ppl.chrs[b].attributes.src.nodeValue.slice(0, 12) + 'inblack.png';
+        chsCh[b] = false;
+      }
+    } else if (diff < 0){
+      for (let i = 0; i < Math.abs(diff); i++) {
+        let b = chsCh.indexOf(chsCh.find(x => x === false));
+        ppl.chrs[b].src = ppl.chrs[b].attributes.src.nodeValue.slice(0, 12) + ppl.chrs[b].attributes.src.nodeValue.slice(19);
+        chsCh[b] = true;
+      }
+    }
   }
 
   // _*_*_*_*_*_*_*_*_| Pg. 2 CALENDAR |_*_*_*_*_*_*_*_*_*_
@@ -273,33 +330,31 @@ import Litepicker from 'litepicker';
 
   let date = {
     cont: document.querySelector('.date-cont'),
-    // inst[0] for default day (today), [1] to be for the end of date range (these will change a bit)
+    // inst[0] for default day (today), [1] to be for the end of date range
     inst: [new Date(), new Date()],
     // ms in a day
     msDays: 84600000,
     txtEle: document.querySelector('.human-form-day'),
     // to present date in a sensible format
+    noEle: document.querySelector('.day-no'),
     humanFriendly(d) {
       return d.toDateString().slice(0, -4); },
     init() {
       picker.ui.classList.add('block', 'inline');
       this.cont.style.left = `${init.w}px`;
-      this.cont.style.padding = `${inProptn(1, 0.005)}px`;
-      // i quickly became cssphobic
       this.txtEle.textContent = `${this.humanFriendly(this.inst[0])} until ${this.humanFriendly(this.inst[1])}`;
       $('.litepicker').click(function() {
         valiDate();
       });
     },
     get dayDiff() {
-      return Math.floor(Math.abs(this.inst[1]-this.inst[0])/this.msDays)+1; },
-    noEle: document.querySelector('.day-no')
+      return Math.floor(Math.abs(this.inst[1]-this.inst[0])/this.msDays)+1; }
   };
 
   date.noEle.addEventListener('click', function(e) {
     let inpMS = date.inst[0].getTime() +
     Math.floor(date.msDays * date.noEle.valueAsNumber) - date.msDays;
-    // just highlighting the daterange for input in the lil up n down no box rather than picker itself
+    // highlighting the daterange for input in the lil up n down box
     picker.setDateRange(date.inst[0], new Date(inpMS));
   }, false);
 
@@ -311,9 +366,9 @@ import Litepicker from 'litepicker';
     } else {
       date.inst[0] = clkd.dateInstance;
     }
-    // highlighting daterange for pickled picked picker dates
+    // highlighting daterange for picked pickled picker dates
     picker.setDateRange(date.inst[0], date.inst[1]);
-    // letting inp no box reflect that
+    // letting input box reflect that
     date.noEle.value = `${date.dayDiff}`;
     date.txtEle.textContent = `${date.humanFriendly(date.inst[0])} until ${date.humanFriendly(date.inst[1])}`;
   }
@@ -326,7 +381,6 @@ import Litepicker from 'litepicker';
     $('.day-no').parsley().validate();
     if (!$('.day-no').parsley().isValid()) {
       date.txtEle.textContent = 'Sorry! Rentals have up to 15 days :o(';
-      // date.txtEle.style.backgroundColor =
     }
   }
 
@@ -346,14 +400,14 @@ import Litepicker from 'litepicker';
     caryard: document.querySelector('.vechs'),
     opts: [],
     anicar: init.w * 2,
-    names: ['motorbike', 'small car', 'large car', 'campervan'],
+    names: ['Motorbike', 'Small car', 'Large car', 'Campervan'],
     init() {
       this.txt.style.left = `${init.w * 2}px`;
     },
     present() {
-      // since must(ang) alr on screen as default, a. don't wanna try add it again and b. can drive offscreen into the abyss
-      if (this.opts.includes('must')) {
-        this.opts = this.opts.filter(x => x !== 'must');
+      // since default car alr on screen, a. don't wanna add it again and b. can drive offscreen into the abyss
+      if (this.opts.includes('car')) {
+        this.opts = this.opts.filter(x => x !== 'car');
       } else {
         car.thingItself.style.zIndex = '-3';
         // otherwise drives in front of mini n looks straight up silly
@@ -389,31 +443,25 @@ import Litepicker from 'litepicker';
     // spread ... makes a flattened list of an iterable literal, super cool n handy here otherwise end up w a 2d arr -- don't want to push default car into caryard, since this guy requires special treatment, but also needs to be included here
       x.addEventListener('click', function(e) {
         clkd.push(x);
-        // glow(x);
         if (clkd.length > 1) {
           infoCont.removeChild(infoCont.firstChild);
         }
-        // if (clkd[clkd.length - 1] === clkd[clkd.length - 2]) {
-        //   console.log('hdi', clkd[clkd.length - 1], clkd[clkd.length - 2]);
-        //   while (infoCont.lastChild) {
-        //     infoCont.lastChild.remove();
-        //   }
-        //   clkd = [];
-        // } else {
         let newD = document.createElement('div');
         let k = omni.keyz.indexOf(x.classList[1]);
-
-        newD.classList.add('wrapper', 'block', 'manu-facts', `${x.classList[1]}`);
+        newD.classList.add('wrapper', 'block', 'manu-facts');
         infoCont.appendChild(newD);
-
-        newD.textContent = `${mechanic.names[k]}: \r\n`;
-        newD.textContent += `$${omni.vals.coin[k] * date.noEle.valueAsNumber} for your ${date.noEle.valueAsNumber} days away`;
+        newD.textContent = mechanic.names[k];
+        let br = document.createElement('p');
+        br.textContent += `$${omni.vals.coin[k] * date.noEle.valueAsNumber} for your ${date.noEle.valueAsNumber} days away`;
+        newD.appendChild(br);
+        let b = document.createElement('button');
+        b.classList.add('btn', 'block');
+        b.textContent = 'Calculate petrol costs';
+        newD.appendChild(b);
 
       }, false);
     });
   }
-
-
 
   // _*_*_*_*_*_*_*_*_| HANDY DANDY FUNCS |_*_*_*_*_*_*_*_*_*_
 
@@ -427,7 +475,6 @@ import Litepicker from 'litepicker';
     anime({
       targets: car.thingItself,
       translateX: (80 * dirc ) * (signs.page),
-      // sings.pg + 1 - dirc is
       easing: 'easeOutExpo',
       duration: 3000
     });
@@ -470,17 +517,19 @@ import Litepicker from 'litepicker';
         targets: signs,
         anisign: dirc * ((init.w / 1.3) * (signs.page - 1)),
         easing: 'easeOutExpo',
-        duration: 2750,
+        duration: 1750,
         update: function() {
           signs.draw();
+          if (signs.anisign === dirc * ((init.w / 1.3) * (signs.page - 1)) / 2) {
+            signs.trf[0].classList.toggle('hide');
+          }
         }
       });
       let peas = [Array.from(signs.pS[0].children), Array.from(signs.pS[1].children)];
-      // airbnb 4.4 says use spread over array.from however good reason to not listen to that here is we need a 2d array, n spread flattens it all
+      // airbnb 4.4 says use spread over array.from however my good reason to not listen to that here is we need a 2d array, n spread flattens it all
       peas.forEach(x => {
         x.forEach(y => {
           y.textContent = signs.txt[peas.indexOf(x) + (signs.page % 2)][x.indexOf(y)];
-          // blame linter on how abstract the indexing got, it didn't like when peas was defined in loop something ab scope and confusing semantics
           // the + signs.page % 2 is so that the text of signs reflects the back n forth nature of if they're prev or next at that page
         });
       });
@@ -561,6 +610,9 @@ import Litepicker from 'litepicker';
       });
     }, false);
   }
+
+  // glow(car.thingItself);
+
 
   // poke(ppl.no);
 

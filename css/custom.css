@@ -10,8 +10,8 @@ body {
 }
 
 p {
-  font-size: 18px !important;
-  text-align: center !important;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 #canvas {
@@ -23,9 +23,9 @@ p {
 
 .logo {
   position: absolute;
-  right: 5px;
-  top: 5px;
-  width: 30vw;
+  right: 1vw;
+  top: 2vh;
+  width: 21vw;
 }
 
 .grass-cont > div {
@@ -40,17 +40,8 @@ p {
   box-shadow: 0 0 9px #ddd;
   -webkit-box-sizing: content-box;
   box-sizing: content-box;
-}
-
-.page-sign-1,
-.page-sign-2 {
   height: 6vh;
   width: 5vw;
-}
-
-.page-sign-cont p{
-  font-weight: normal;
-  font-size: 1rem;
 }
 
 .inp-el {
@@ -59,7 +50,7 @@ p {
   margin-top: 22vh;
   text-align: center;
   font-weight: lighter;
-  font-size: 1.2rem !important;
+  font-size: 1rem !important;
   padding: 1vh !important;
   -webkit-box-shadow: 0 0 9px #ddd;
   box-shadow: 0 0 9px #ddd;
@@ -68,15 +59,11 @@ p {
 }
 
 .header-welcome {
-  font-size: 3.3em !important;
+  font-size: 4.3rem !important;
   /* font-weight: bolder !important; */
   position: absolute;
-  margin-left: 20vw;
-  margin-top: 11vh;
-  -webkit-box-shadow: 0 0 0px #ddd;
-  box-shadow: 0 0 0px #ddd;
-  -webkit-box-sizing: content-box;
-  box-sizing: content-box;
+  margin-left: 21vw;
+  margin-top: 8vh;
 }
 
 /* people section */
@@ -86,7 +73,7 @@ p {
   width: 36%;
   /* font-size: 2.4rem !important; */
   margin-top: 29vh;
-  margin-left: 33vw;
+  margin-left: 32vw;
   padding-bottom: 3px;
 }
 
@@ -94,7 +81,7 @@ p {
   padding-bottom: 27px;
   padding-top: 3px;
   font-weight: lighter;
-  font-size: 1.3rem !important;
+  font-size: 1.2rem;
 }
 
 .ppl-inp-cont {
@@ -107,7 +94,6 @@ p {
 }
 
 .ppl-no {
-  float: left;
   margin-right: 30px !important;
   margin-top: 57px !important;
   height: 38px;

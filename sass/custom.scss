@@ -1,1 +1,212 @@
-@import '../node_modules/js-datepicker/src/datepicker.scss';
+@import '../node_modules/litepicker/dist/css/litepicker.css';
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300&display=swap');
+
+// margins n paddings most used by blocks n most changed by me, hence the importants
+
+@mixin most {
+  position: absolute;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+@mixin qTxt {
+  font-weight: lighter;
+  font-size: 1.2rem;
+}
+
+@mixin cssGlow {
+  -webkit-box-shadow: 0 0 9px #ddd;
+  box-shadow: 0 0 9px #ddd;
+  -webkit-box-sizing: content-box;
+  box-sizing: content-box;
+}
+
+@mixin hoverGlow {
+
+}
+
+$pads: 1vh 1vw 1vh 1vw !important;
+
+body {
+  @include most;
+  overflow: hidden;
+  margin: 0px;
+  background-image: url('../img/bg2.jpg');
+  background-size: cover;
+}
+
+p {
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* homepage / universal elements */
+
+#canvas {
+  @include most;
+  z-index: -100;
+}
+
+.logo {
+  @include most;
+  right: 1vw;
+  top: 2vh;
+  width: 21vw;
+}
+
+.grass-cont > div {
+  @include most;
+  z-index: -8;
+}
+
+.page-sign-1,
+.page-sign-2 {
+  @include most;
+  @include cssGlow;
+  padding: $pads;
+  height: 7.4vh;
+  width: 6.6vw;
+}
+
+.page-sign-cont p {
+  font-size: 1.2rem;
+}
+
+.moving-blocks {
+  @include most;
+  padding: $pads;
+  margin-left: 33vw;
+  margin-top: 15vh;
+  text-align: center;
+}
+
+.header-welcome {
+  @include most;
+  font-size: 4.3rem;
+  margin-left: 21vw;
+  margin-top: 8vh;
+}
+
+.car {
+  @include most;
+}
+
+/* people section */
+
+.ppl {
+  @include cssGlow;
+  height: 36vh;
+  width: 33vw;
+  margin-top: 29vh;
+  margin-left: 32vw;
+}
+
+.ppl-msg {
+  @include qTxt;
+}
+
+.ppl-inp-cont {
+  width: 3.6rem;
+  padding-left: 2.1vw;
+}
+
+.ppl-no {
+  float: bottom;
+  margin-top: 11vh !important;
+  width: 3.9rem;
+  height: 3.6rem;
+  font-size: 2rem !important;
+  font-weight: lighter;
+}
+
+.ppl-cont {
+  width: 90%;
+  float: right;
+  position: relative;
+  top: -13vh;
+}
+
+/* date section */
+
+.date-cont {
+  @include cssGlow;
+  @include qTxt;
+  padding: $pads;
+  height: 45vh;
+  width: 33vw;
+}
+
+.changing-days {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  margin-top: 2vh !important;
+}
+
+.day-no {
+  width: 3.6rem;
+}
+
+.human-form-day {
+  font-size: 0.9rem;
+}
+
+/* vechicle select */
+
+.v-cont {
+  @include most;
+  @include qTxt;
+  width: 39vw;
+  top: -10vh;
+}
+
+.vechs {
+  height: inherit;
+}
+
+.v {
+  @include most;
+}
+
+.mb {
+  bottom: 26vh;
+  width: 21vw;
+}
+
+.car {
+  width: 33vw;
+}
+
+.mn {
+  bottom: 8vh;
+  z-index: 5;
+}
+
+.cpv {
+  bottom: 26vh;
+}
+
+.manu-facts {
+  @include most;
+  @include qTxt;
+  padding: $pads;
+  height: 15vh;
+  width: 15vw;
+  top: 27vh;
+  left: 21vw;
+}
+
+.btn {
+  margin-top: 1vh !important;
+}
+
+/* misc */
+
+.hide {
+  display: none;
+}
+
+.redtrf,
+.grntrf {
+  @include most;
+  height: 27vh;
+}

@@ -10,70 +10,58 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/custom.css">
+  <link rel="stylesheet" href="css/custom.min.css">
   <title>Document</title>
 </head>
 <body>
   <canvas id="canvas"></canvas>
   <img src="img/logo.png" class="logo" alt="">
-
-  <div class="header-welcome inp-el">
+  <div class="header-welcome moving-blocks">
       Find your rental car here.
   </div>
-
-    <div class="ppl wrapper block inp-el">
-    <!-- How many people will you be with? -->
-
+  <!-- ppl -->
+    <div class="ppl wrapper block moving-blocks">
       <p class="ppl-msg">To begin your kiwi holiday, <br> select how many people you will be travelling with:</p>
-
     <div class="ppl-inp-cont">
-
-      <!-- <input type="number" min="0" class="ppl-no block inline" value="0"></input> -->
-      <div class="ppl-no block inline">0</div>
+      <input type="number" name="quantity" data-parsley-type="integer" data-parsley-range="[1, 6]" data-parsley-ui-enabled="false" autocomplete="off" value="0" min="0" class="ppl-no block inline"></div>
       <div class="ppl-cont"></div>
     </div>
   </div>
-  <div class="date-cont wrapper block inp-el">
+  <!-- date -->
+  <div class="date-cont wrapper block moving-blocks">
       For how long will you need your rental?
       <div class="changing-days">
-        <input type="number" class="day-no block inline" name="" data-parsley-type="number" data-parsley-range="[1, 15]" data-parsley-ui-enabled="false" value="">
-        <div class="human-form-day" ></div>
+        <input type="number" class="day-no block inline" name="quantity" data-parsley-type="integer" data-parsley-range="[1, 15]" data-parsley-ui-enabled="false" min="0" autocomplete="off" value="">
+        <div class="human-form-day"></div>
       </div>
     <div class="calendar"></div>
   </div>
-  <!-- <div class="map-txt-cont wrapper block inp-el">
+  <!-- <div class="map-txt-cont wrapper block moving-blocks">
     which city will you be based in?
   </div>
-  <div class="map-cont wrapper block inp-el">
+  <div class="map-cont wrapper block moving-blocks">
   <div class="map"></div>
   </div> -->
-  <div class="v-cont wrapper block inp-el">
-    These vechicles are well-suited for your holiday! <br> Click on them to see more information <br> <p> Try going back and altering your answers if you would rather something different </p>
+  <!-- vechicles -->
+  <div class="v-cont wrapper block moving-blocks">
+    These vechicles are well-suited for your holiday! <br> Click on them to see more information <br> <p> Try going back and changing your answers if you're unhappy with what's available here. </p>
   </div>
-  <div class="vechs">
-    <!-- <img class="v mb hide" src="img/mb.png" alt="">
-    <img class="v mn hide" src="img/mini.png" alt="">
-    <img class="v cpv hide" src="img/cpv.png" alt=""> -->
-  </div>
-  <img class="car must" src="img/car.png" alt="">
-
+  <div class="vechs"></div>
   <div class="v-info"></div>
-
+  <!-- general -->
   <div class="grass-cont">
     <div class="grass0"></div>
     <div class="grass1"></div>
     <div class="grass2"></div>
     <div class="grass3"></div>
   </div>
-
-
-
+  <img class="redtrf" src="img/redtrf.png" alt="">
+  <img class="grntrf hide" src="img/grntrf.png" alt="">
 
   <div class="page-sign-cont">
-    <div class="page-sign-1 wrapper inline block"><p>Next →</p><p>Q. 1 of 4</p></div>
-    <div class="page-sign-2 wrapper inline block"><p>Next →</p><p>Q. 1 of 4</p></div>
+    <div class="page-sign-1 wrapper inline block"><p>Next →</p><p>Q. 1 of 3</p></div>
+    <div class="page-sign-2 wrapper inline block"><p>Next →</p><p>Q. 1 of 3</p></div>
   </div>
   <script type="text/javascript" src="js/bundle.js"></script>
-
 </body>
 </html>
