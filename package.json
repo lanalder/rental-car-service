@@ -22,6 +22,8 @@
   "author": "Jared",
   "license": "ISC",
   "dependencies": {
+    "@turf/length": "^6.4.0",
+    "@turf/turf": "^6.4.0",
     "animejs": "^3.2.1",
     "antd": "^4.16.2",
     "circular-dependency-plugin": "^5.2.2",

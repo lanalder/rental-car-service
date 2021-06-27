@@ -6,7 +6,9 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="stylesheet" href="css/blocks.min.css" />
   <!-- <link href='https://api.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.css' rel='stylesheet' /> -->
-  <link rel='stylesheet' href="node_modules/mapbox-gl/src/css/mapbox-gl.css">
+  <!-- <link rel='stylesheet' href="node_modules/mapbox-gl/src/css/mapbox-gl.css"> -->
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700&display=swap" rel="stylesheet">
@@ -19,6 +21,7 @@
   <div class="header-welcome moving-blocks">
       Find your rental car here.
   </div>
+
   <!-- ppl -->
     <div class="ppl wrapper block moving-blocks">
       <p class="ppl-msg">To begin your kiwi holiday, <br> select how many people you will be travelling with:</p>
@@ -27,27 +30,32 @@
       <div class="ppl-cont"></div>
     </div>
   </div>
+
   <!-- date -->
   <div class="date-cont wrapper block moving-blocks">
       For how long will you need your rental?
       <div class="changing-days">
-        <input type="number" class="day-no block inline" name="quantity" data-parsley-type="integer" data-parsley-range="[1, 15]" data-parsley-ui-enabled="false" min="0" autocomplete="off" value="">
+        <input type="number" class="day-no block inline" name="quantity" data-parsley-type="integer" data-parsley-range="[1, 15]" data-parsley-ui-enabled="false" autocomplete="off" min="0" value="0">
         <div class="human-form-day"></div>
       </div>
     <div class="calendar"></div>
   </div>
-  <!-- <div class="map-txt-cont wrapper block moving-blocks">
-    which city will you be based in?
-  </div>
-  <div class="map-cont wrapper block moving-blocks">
-  <div class="map"></div>
-  </div> -->
+
   <!-- vechicles -->
   <div class="v-cont wrapper block moving-blocks">
-    These vechicles are well-suited for your holiday! <br> Click on them to see more information <br> <p> Try going back and changing your answers if you're unhappy with what's available here. </p>
+    These vechicles are well-suited for your holiday! <br> Click on them for pricing & further info <br> <p> Try going back and changing your answers to see other options </p>
   </div>
   <div class="vechs"></div>
-  <div class="v-info"></div>
+  <div class="v-info hide">
+    <div class="v-txt-ch wrapper block"></div>
+  </div>
+
+  <!-- map -->
+  <div class="map-cont wrapper block">
+    <div id="distance" class="">Click on the map to draw your route & get an estimate for how much gas will be used</div>
+    <div class="map"></div>
+  </div>
+
   <!-- general -->
   <div class="grass-cont">
     <div class="grass0"></div>
@@ -55,13 +63,16 @@
     <div class="grass2"></div>
     <div class="grass3"></div>
   </div>
-  <img class="redtrf" src="img/redtrf.png" alt="">
-  <img class="grntrf hide" src="img/grntrf.png" alt="">
+  <div class="traffic">
+    <img class="redtrf" src="img/redtrf.png" alt="">
+    <img class="grntrf hide" src="img/grntrf.png" alt="">
+  </div>
 
   <div class="page-sign-cont">
     <div class="page-sign-1 wrapper inline block"><p>Next →</p><p>Q. 1 of 3</p></div>
     <div class="page-sign-2 wrapper inline block"><p>Next →</p><p>Q. 1 of 3</p></div>
   </div>
+  <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
   <script type="text/javascript" src="js/bundle.js"></script>
 </body>
 </html>

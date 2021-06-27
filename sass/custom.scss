@@ -10,7 +10,12 @@
 
 @mixin qTxt {
   font-weight: lighter;
-  font-size: 1.2rem;
+  font-size: 1.2em;
+}
+
+@mixin inpTxt {
+  font-weight: lighter;
+  font-size: 2rem !important;
 }
 
 @mixin cssGlow {
@@ -35,7 +40,7 @@ body {
 }
 
 p {
-  font-size: 0.9rem;
+  font-size: 1em;
   text-align: center;
 }
 
@@ -74,7 +79,7 @@ p {
 .moving-blocks {
   @include most;
   padding: $pads;
-  margin-left: 33vw;
+  margin-left: 29vw;
   margin-top: 15vh;
   text-align: center;
 }
@@ -94,10 +99,10 @@ p {
 
 .ppl {
   @include cssGlow;
-  height: 36vh;
-  width: 33vw;
+  height: 33vh;
+  width: 36vw;
   margin-top: 29vh;
-  margin-left: 32vw;
+  margin-left: 30vw;
 }
 
 .ppl-msg {
@@ -110,12 +115,11 @@ p {
 }
 
 .ppl-no {
+  @include inpTxt
   float: bottom;
-  margin-top: 11vh !important;
+  margin-top: 9vh !important;
   width: 3.9rem;
   height: 3.6rem;
-  font-size: 2rem !important;
-  font-weight: lighter;
 }
 
 .ppl-cont {
@@ -143,6 +147,7 @@ p {
 }
 
 .day-no {
+  @include inpTxt;
   width: 3.6rem;
 }
 
@@ -185,18 +190,47 @@ p {
   bottom: 26vh;
 }
 
-.manu-facts {
+.v-txt-ch {
   @include most;
   @include qTxt;
   padding: $pads;
   height: 15vh;
-  width: 15vw;
+  width: 18vw;
   top: 27vh;
   left: 21vw;
 }
 
+.v-info p,
+.v-cont p {
+  font-size: 1rem;
+}
+
 .btn {
   margin-top: 1vh !important;
+}
+
+/* map */
+
+.map-cont {
+  @include most;
+  top: 20vh;
+  width: 35vw;
+  height: 45vh;
+}
+
+.map {
+  width: 100%;
+  height: 85%;
+}
+
+#distance {
+  font-weight: lighter;
+  font-size: 1rem;
+  text-align: center;
+  position: sticky;
+  width: 90%;
+  margin-left: 5%;
+  height: 12%;
 }
 
 /* misc */

@@ -4,6 +4,8 @@ import $ from 'jquery';
 
 import Litepicker from 'litepicker';
 // import mapboxgl from 'mapbox-gl';
+// import turf from '@turf/turf';
+// import length from '@turf/length';
 // import needs to be outside iffe wrapper, otherwise throws undefined errors; i think this is because es6 modules are pre-parsed instead of commonjs (require) being called on demand, meaning that when first read the objs requiring litepicker are not yet defined... obvs out here litepicker-depending objs are still not defined, though they are within an as of yet anon func, so it must be able to access necessary values as returns once wrapper iffe is called, whereas if they were in the same global scope, the module isn't gonna wait for returns but expects those values there from the start
 
 (function () {
@@ -20,7 +22,7 @@ import Litepicker from 'litepicker';
       ppl: [[1, 1], [1, 2], [1, 5], [2, 6]],
       days: [[1, 5], [1, 10], [3, 10], [2, 15]],
       coin: [109, 129, 144, 200],
-      gas: [109, 129, 144, 200]
+      gas: [3.7, 8.5, 9.7, 17]
     }
   };
 
@@ -152,8 +154,15 @@ import Litepicker from 'litepicker';
     trf: [document.querySelector('.grntrf'), document.querySelector('.redtrf')],
     anisign: 0,
     signPos: [init.w - inProptn(0, 6), init.w * 2 - inProptn(0, 3)],
-    eraser: [[], [], []],
-    // canvas sucks to animate, signposts logged here so can be cleared when they move
+    pos: {
+      x: [init.w - inProptn(0, 6), init.w * 2 - inProptn(0, 3)],
+      h: inProptn(1, 5),
+      w: inProptn(0, 150),
+      sT: road.y - inProptn(1, 6) - (7.4 * init.h / 100),
+      tX: ((7.4 * init.h / 100) * 1.9)
+    },
+    eraser: [[], [], [], []],
+    // signpost drawings logged here so can be cleared when they move (one per prev / next sign, 3rd for traffic light)
     get txt() {
       return [['← Back', `Q. ${this.page - 1} of 3`], ['Next →', `Q. ${this.page} of 3`], ['← Back', `Q. ${this.page - 1} of 3`]]; },
     // get just used so can reference this.page, prop defs can't ref each other i guess bc they're all read in one initialising sweep instead of called after
@@ -162,30 +171,43 @@ import Litepicker from 'litepicker';
         this.erase();
       }
       ctx.fillStyle = '#1A1D22';
-      let sT = road.y - inProptn(1, 6) - (7.4 * init.h / 100);
-      let tX = this.trf[1].clientWidth / 0.87;
-      let h = inProptn(1, 5);
-      let w = inProptn(0, 150);
-      // doing what we can to ward off 3fps animation
       for (let i = 0; i < 2; i++) {
-        this.pS[i].style.top = `${sT}px`;
-        this.pS[i].style.left = `${this.signPos[i] - (this.pS[i].clientWidth / 1.98) - this.anisign}px`;
-        ctx.fillRect(this.signPos[i] - this.anisign, sT, w, h);
-        this.eraser[i].push(this.signPos[i] - this.anisign - 3, sT - 3, w + 5, h + 5);
-        this.trf[i].style.top = `${sT - ((19 * init.h) / 100)}px`;
-        this.trf[i].style.left = `${this.signPos[0] - this.trf[1].clientWidth * 1.6 - this.anisign}px`;
+        this.pS[i].style.top = `${this.pos.sT}px`;
+        this.pS[i].style.left = `${this.pos.x[i] - (this.pS[i].clientWidth / 1.98) - this.anisign}px`;
+        ctx.fillRect(this.pos.x[i] - this.anisign, this.pos.sT, this.pos.w, this.pos.h);
+        this.eraser[i].push(this.pos.x[i] - this.anisign - 3, this.pos.sT - 3, this.pos.w + 5, this.pos.h + 5);
       }
-      ctx.fillRect(this.signPos[0] - tX - this.anisign, sT, w, h);
-      this.eraser[2].push(this.signPos[0] - tX - this.anisign - 3, sT - 3, w + 5, h + 5);
     },
     erase() {
       this.eraser.forEach(x => {
         ctx.clearRect(x[0], x[1], x[2], x[3]);
       });
-      this.eraser = [[], [], []];
+      this.eraser = [[], [], [], []];
+    }
+  };
+
+  let traffic = {
+    // poss look into doing that extend / inheritance thing?
+    trf: [document.querySelector('.grntrf'), document.querySelector('.redtrf')],
+    rp: [],
+    anisign: 0,
+    draw(l, n) {
+      l.forEach(x => {
+        x.style.top = `${signs.pos.sT - ((19 * init.h) / 100)}px`;
+        x.style.left = `${signs.pos.x[n] - signs.pos.tX * 1.4 - (this.anisign / 0.9) + (n * 100)}px`;
+      });
+      ctx.fillRect(signs.pos.x[n] - signs.pos.tX - (this.anisign / 0.9) + (n * 100), signs.pos.sT, signs.pos.w, signs.pos.h);
+      signs.eraser[2 + n].push(signs.pos.x[n] - signs.pos.tX - (this.anisign / 0.9) + (n * 100) - 3, signs.pos.sT - 3, signs.pos.w + 5, signs.pos.h + 5);
     },
-    lightChange() {
-      this.trf.forEach(x => x.classList.toggle('hide'));
+    lightChange(l) {
+      l.forEach(x => x.classList.toggle('hide'));
+    },
+    clone() {
+      for (let i = 0; i < 2; i++) {
+        this.rp.push(this.trf[i].cloneNode());
+        document.querySelector('.traffic').appendChild(this.rp[i]);
+      }
+      this.lightChange(this.rp);
     }
   };
 
@@ -195,6 +217,9 @@ import Litepicker from 'litepicker';
       // no animating till error resolved
       valiPpl();
     } else if (signs.page === 1 && ppl.no > 0 && ppl.no < 7) {
+      if (traffic.rp[0] == null) {
+        traffic.clone();
+      }
       animate(1);
     } else if (signs.page === 2 ) {
       // animate back a page on pg.2 since sign 0 now prev
@@ -203,10 +228,11 @@ import Litepicker from 'litepicker';
   }, false);
 
   signs.pS[1].addEventListener('click', function() {
-    if (signs.page === 2 && $('.day-no').parsley().isValid()) {
+    if (signs.page === 2 && traffic.rp[1].classList.contains('hide')) {
       glow(car.thingItself);
       animate(1);
     } else if (signs.page === 3) {
+      reverse();
       animate(0.99);
       // 0.99 was trial n error n i don't rly understand why it translates exactly a full page backwards except maybe bc 0.99 * var would give us var - 0.var which is essentially a full animation cycle when var is transX, and as a decimal makes new animation value less than current position so brings page back instead of forward like in animate(1)
     }
@@ -241,14 +267,14 @@ import Litepicker from 'litepicker';
         ppl.no--;
         // lucky that the names r the same length!
         this.src = this.attributes.src.nodeValue.slice(0, 16) + this.attributes.src.nodeValue.slice(23);
-        if (!ppl.no && !signs.trf[0].classList.contains('hide')) {
-          signs.lightChange();
+        if (!ppl.no && !traffic.trf[0].classList.contains('hide')) {
+          traffic.lightChange(traffic.trf);
         }
       } else {
         ppl.no++;
         this.src =  this.attributes.src.nodeValue.slice(0, 16) + 'inblack.png';
-        if (signs.trf[0].classList.contains('hide')) {
-          signs.lightChange();
+        if (traffic.trf[0].classList.contains('hide')) {
+          traffic.lightChange(traffic.trf);
         }
       }
       ppl.noEle.value = ppl.no;
@@ -260,13 +286,15 @@ import Litepicker from 'litepicker';
   });
 
   function valiPpl() {
+    let go = traffic.rp[0].classList.contains('hide');
     $(ppl.noEle).parsley().validate();
     if (!$(ppl.noEle).parsley().isValid()) {
+      if (!go) {
+        traffic.lightChange(traffic.trf);
+        // interesting that the argument here doesn't seem strictly necessary?
+      }
       if (ppl.noEle.valueAsNumber > 6) {
         document.querySelector('.ppl-msg').textContent = "Sorry! Rentals fit up to 6 people per vechicle";
-        if (!signs.trf[0].classList.contains('hide')) {
-          signs.lightChange();
-        }
       } else {
         document.querySelector('.ppl-msg').textContent = "Cannot rent a car for nobody! Please select at least 1 person";
         ppl.chrs.forEach(x => {
@@ -274,14 +302,11 @@ import Litepicker from 'litepicker';
             x.src = x.attributes.src.nodeValue.slice(0, 12) + x.attributes.src.nodeValue.slice(19);
           }
         });
-        if (!signs.trf[0].classList.contains('hide')) {
-          signs.lightChange();
-        }
       }
       ppl.no = ppl.noEle.valueAsNumber;
     } else {
-      if (signs.trf[0].classList.contains('hide')) {
-        signs.lightChange();
+      if (go) {
+        traffic.lightChange(traffic.trf);
       }
       coordinate();
       ppl.no = ppl.noEle.valueAsNumber;
@@ -378,9 +403,21 @@ import Litepicker from 'litepicker';
   });
 
   function valiDate() {
+    let go = traffic.rp[0].classList.contains('hide');
     $('.day-no').parsley().validate();
     if (!$('.day-no').parsley().isValid()) {
-      date.txtEle.textContent = 'Sorry! Rentals have up to 15 days :o(';
+      if (!go) {
+        traffic.lightChange(traffic.rp);
+      }
+      if (!date.noEle.valueAsNumber) {
+        date.txtEle.textContent = 'You might want it for at least a day';
+      } else if (date.noEle.valueAsNumber >= 15) {
+        date.txtEle.textContent = 'Sorry! Rentals only have up to 15 days';
+      }
+    } else {
+      if (go) {
+        traffic.lightChange(traffic.rp);
+      }
     }
   }
 
@@ -437,30 +474,103 @@ import Litepicker from 'litepicker';
   };
 
   function carChat() {
-    let clkd = [];
-    let infoCont = document.querySelector('.v-info');
-    [...Array.from(mechanic.caryard.children), car.thingItself].forEach(x => {
-    // spread ... makes a flattened list of an iterable literal, super cool n handy here otherwise end up w a 2d arr -- don't want to push default car into caryard, since this guy requires special treatment, but also needs to be included here
+    // for presenting car info and data calcs
+    let c = 0;
+    let cont = document.querySelector('.v-info');
+    let txt = document.querySelector('.v-txt-ch');
+    let dets = [document.createElement('p'), document.createElement('button')];
+    let btnTxt = ['Calculate gas efficiency', 'Choose another vechicle'];
+    [...mechanic.caryard.children, car.thingItself].forEach(x => {
+    // spread used here otherwise end up w a 2d arr -- don't want to push default car into caryard, since this guy requires special treatment, but also needs to be included in all this
       x.addEventListener('click', function(e) {
-        clkd.push(x);
-        if (clkd.length > 1) {
-          infoCont.removeChild(infoCont.firstChild);
+        dets[0].textContent = '';
+        if (cont.classList.contains('hide')) {
+          cont.classList.remove('hide');
         }
-        let newD = document.createElement('div');
         let k = omni.keyz.indexOf(x.classList[1]);
-        newD.classList.add('wrapper', 'block', 'manu-facts');
-        infoCont.appendChild(newD);
-        newD.textContent = mechanic.names[k];
-        let br = document.createElement('p');
-        br.textContent += `$${omni.vals.coin[k] * date.noEle.valueAsNumber} for your ${date.noEle.valueAsNumber} days away`;
-        newD.appendChild(br);
-        let b = document.createElement('button');
-        b.classList.add('btn', 'block');
-        b.textContent = 'Calculate petrol costs';
-        newD.appendChild(b);
-
+        txt.textContent = mechanic.names[k];
+        dets[0].textContent += `$${omni.vals.coin[k] * date.noEle.valueAsNumber} for your ${date.noEle.valueAsNumber} days away`;
+        dets[1].classList.add('btn', 'block');
+        dets[1].textContent = btnTxt[c];
+        txt.append(...dets);
+        dets[1].addEventListener('click', function() {
+          if (!c) {
+            c++;
+            cartograph(x);
+          } else {
+            c--;
+            geo.goOff.reverse();
+            geo.mapVis.reverse();
+          }
+          dets[1].textContent = btnTxt[c];
+        });
+        // geo.gasPedal = dets[1];
       }, false);
     });
+  }
+
+  // _*_*_*_*_*_*_*_*_| Pg. 3 MAP & GAS |_*_*_*_*_*_*_*_*_*_
+
+  mapboxgl.accessToken = 'pk.eyJ1IjoibGFuYWxkZXIiLCJhIjoiY2tweGlqd2RmMWVyajJ2b2lrejYzbDZ5diJ9.ELtetZkKKBOunIgDPByWYQ';
+
+  var map = new mapboxgl.Map({
+    container: document.querySelector('.map'),
+    style: 'mapbox://styles/mapbox/streets-v11',
+    // center: [167.33695575335665, -41.25361608045145],
+    center: [174.74178362117001, -41.079950115189185],
+    zoom: 5
+  });
+
+  let geo = {
+    gasPedal: null,
+    clkd: null,
+    cont: document.querySelector('.map-cont'),
+    goOff: null,
+    mbVis: null,
+    mapVis: null,
+    // off: [],
+    init() {
+      this.cont.style.left = `${init.w * 2}px`;
+    }
+  };
+
+  function cartograph(v) {
+    geo.clkd = v;
+    // where argument is vechicle clicked
+    let off = [...mechanic.caryard.children, car.thingItself].filter(x => x !== v);
+    geo.goOff = anime({
+      targets: off,
+      translateX: init.w + 1000,
+      easing: 'easeOutQuad',
+      duration: 2600
+    });
+    let s = v.attributes.src.nodeValue;
+    if (!s.includes('glow')) {
+      v.src = `../img/glow${s.slice(7)}`;
+    }
+    if (v.classList.contains('mb')) {
+      geo.mbVis = anime({
+        targets: v,
+        translateX: -init.w / 1.6,
+        easing: 'easeOutQuad',
+        duration: 1200
+      });
+    }
+    geo.mapVis = anime({
+      targets: geo.cont,
+      translateX: -init.w * 1.6,
+      easing: 'easeOutQuad',
+      duration: 1000
+    });
+  }
+
+  function gasC(d) {
+    distCont.textContent = '';
+    // this func is called from last section of code which handles the map / turf.length stuff; d is distance from points
+    let ind = omni.keyz.indexOf(geo.clkd.classList[1]);
+    let gL = Math.round((d / 100) * omni.vals.gas[ind]);
+    let lcn = mechanic.names[ind].charAt(0).toLowerCase();
+    distCont.textContent += `A ${lcn + mechanic.names[ind].substring(1)} will use ${gL} litres of gas for this ${d}km long journey`;
   }
 
   // _*_*_*_*_*_*_*_*_| HANDY DANDY FUNCS |_*_*_*_*_*_*_*_*_*_
@@ -481,7 +591,7 @@ import Litepicker from 'litepicker';
     anime({
       targets: inpBits,
       translateX: dirc * (-((init.w / 1.1) * (signs.page - 1) + ((signs.page - 1) * 120))),
-      // idk what mathematically is going on here but random sums haven't failed me yet
+      // don't have a clue as to why those numbers work
       easing: 'linear',
       duration: 1500
     });
@@ -513,39 +623,55 @@ import Litepicker from 'litepicker';
         duration: 3000
       });
     }
-      anime({
-        targets: signs,
-        anisign: dirc * ((init.w / 1.3) * (signs.page - 1)),
-        easing: 'easeOutExpo',
-        duration: 1750,
-        update: function() {
-          signs.draw();
-          if (signs.anisign === dirc * ((init.w / 1.3) * (signs.page - 1)) / 2) {
-            signs.trf[0].classList.toggle('hide');
-          }
-        }
+    anime({
+      targets: [signs, traffic],
+      anisign: dirc * ((init.w / 1.3) * (signs.page - 1)),
+      easing: 'easeOutExpo',
+      duration: 1750,
+      update: function() {
+        signs.draw();
+        traffic.draw(traffic.trf, 0);
+        traffic.draw(traffic.rp, 1);
+      }
+    });
+    let peas = [Array.from(signs.pS[0].children), Array.from(signs.pS[1].children)];
+    // airbnb 4.4 says use spread over array.from however my good reason to not listen to that here is we need a 2d array, n spread flattens it all
+    peas.forEach(x => {
+      x.forEach(y => {
+        y.textContent = signs.txt[peas.indexOf(x) + (signs.page % 2)][x.indexOf(y)];
+        // the + signs.page % 2 is so that the text of signs reflects the back n forth nature of if they're prev or next at that page
       });
-      let peas = [Array.from(signs.pS[0].children), Array.from(signs.pS[1].children)];
-      // airbnb 4.4 says use spread over array.from however my good reason to not listen to that here is we need a 2d array, n spread flattens it all
-      peas.forEach(x => {
-        x.forEach(y => {
-          y.textContent = signs.txt[peas.indexOf(x) + (signs.page % 2)][x.indexOf(y)];
-          // the + signs.page % 2 is so that the text of signs reflects the back n forth nature of if they're prev or next at that page
-        });
-      });
+    });
     // }
     // signs.page++;
     // road.animark = 0;
   }
 
-  // mapboxgl.accessToken = 'pk.eyJ1IjoibGFuYWxkZXIiLCJhIjoiY2tweGlqd2RmMWVyajJ2b2lrejYzbDZ5diJ9.ELtetZkKKBOunIgDPByWYQ';
-  //
-  // const map = new mapboxgl.Map({
-  //   container: document.querySelector('.map'),
-  //   style: 'mapbox://styles/mapbox/streets-v11',
-  //   center: [-74.5, 40],
-  //   zoom: 9
-  // });
+  function reverse() {
+    anime({
+      targets: mechanic.caryard,
+      translateX: 0,
+      easing: 'easeOutExpo',
+      duration: 3000
+    });
+    window.setTimeout(function() {
+      while (mechanic.caryard.lastChild) {
+        mechanic.caryard.lastChild.remove();
+      }
+    }, 1500);
+    window.clearTimeout();
+    mechanic.opts = [];
+    if (car.thingItself.classList.contains('hide')) {
+      car.thingItself.classList.remove('hide');
+      anime({
+        targets: car.thingItself,
+        translateX: init.w - 1000,
+        easing: 'easeOutQuad',
+        duration: 2600
+      });
+    }
+  }
+
   //
   // let geo = {
   //   cont: document.querySelector('.map'),
@@ -564,12 +690,13 @@ import Litepicker from 'litepicker';
     init.setScl();
     road.markings();
     ppl.draw();
+    geo.init();
     signs.draw();
+    traffic.draw(traffic.trf, 0);
     car.position();
     // grass.draw();
     date.init();
     mechanic.init();
-    // geo.init();
   }
 
   function inProptn(nu, de) {
@@ -622,6 +749,112 @@ import Litepicker from 'litepicker';
   'load resize'.split(' ').forEach(function(e) {
     // rescale things on both page load n resize
     window.addEventListener(e, tailor, false);
+  });
+
+  // _*_*_*_*_*_*_*_*_| the code below is not mine !! -->
+  //       https://docs.mapbox.com/mapbox-gl-js/example/measure/ |_*_*_*_*_*_*_*_*_*_
+
+  var distCont = document.getElementById('distance');
+
+  var geojson = {
+    'type': 'FeatureCollection',
+    'features': []
+  };
+
+  var linestring = {
+      'type': 'Feature',
+      'geometry': {
+        'type': 'LineString',
+        'coordinates': []
+    }
+  };
+
+  map.on('load', function () {
+    map.addSource('geojson', {
+      'type': 'geojson',
+      'data': geojson
+  });
+
+  // Add styles to the map
+  map.addLayer({
+    id: 'measure-points',
+    type: 'circle',
+    source: 'geojson',
+    paint: {
+      'circle-radius': 5,
+      'circle-color': '#6F2931'
+    },
+    filter: ['in', '$type', 'Point']
+  });
+
+  map.addLayer({
+    id: 'measure-lines',
+    type: 'line',
+    source: 'geojson',
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round'
+    },
+    paint: {
+      'line-color': '#6F2931',
+      'line-width': 2.5
+    },
+    filter: ['in', '$type', 'LineString']
+  });
+
+  map.on('click', function (e) {
+      var features = map.queryRenderedFeatures(e.point, {
+        layers: ['measure-points']
+      });
+      // Remove the linestring from the group
+      // So we can redraw it based on the points collection
+      if (geojson.features.length > 1) geojson.features.pop();
+      // Clear the Distance container to populate it with a new value
+      // distCont.innerHTML = '';
+      // If a feature was clicked, remove it from the map
+      if (features.length) {
+        var id = features[0].properties.id;
+        geojson.features = geojson.features.filter(function (point) {
+          return point.properties.id !== id;
+        });
+      } else {
+        var point = {
+          'type': 'Feature',
+          'geometry': {
+            'type': 'Point',
+            'coordinates': [e.lngLat.lng, e.lngLat.lat]
+          },
+          'properties': {
+            'id': String(new Date().getTime())
+          }
+        };
+      geojson.features.push(point);
+    }
+    if (geojson.features.length > 1) {
+      linestring.geometry.coordinates = geojson.features.map(
+        function (point) {
+          return point.geometry.coordinates;
+        }
+      );
+      geojson.features.push(linestring);
+      // Populate the distanceContainer with total distance
+      // var value = document.createElement('p');
+      // distCont.textContent = 'Total distance: ' + turf.length(linestring).toLocaleString() + 'km';
+
+      gasC(turf.length(linestring).toLocaleString());
+
+        // distCont.appendChild(value);
+      }
+      map.getSource('geojson').setData(geojson);
+    });
+  });
+
+  map.on('mousemove', function (e) {
+    var features = map.queryRenderedFeatures(e.point, {
+      layers: ['measure-points']
+    });
+    // UI indicator for clicking/hovering a point on the map
+    map.getCanvas().style.cursor = features.length ? 'pointer' : 'crosshair';
   });
 
 }());
