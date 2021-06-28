@@ -468,46 +468,81 @@ import Litepicker from 'litepicker';
         c.style.right = `${-init.w}px`;
         glow(c);
         this.caryard.appendChild(c);
-        carChat();
+        carChat.addInfo();
       });
     }
   };
 
-  function carChat() {
-    // for presenting car info and data calcs
-    let c = 0;
-    let cont = document.querySelector('.v-info');
-    let txt = document.querySelector('.v-txt-ch');
-    let dets = [document.createElement('p'), document.createElement('button')];
-    let btnTxt = ['Calculate gas efficiency', 'Choose another vechicle'];
-    [...mechanic.caryard.children, car.thingItself].forEach(x => {
-    // spread used here otherwise end up w a 2d arr -- don't want to push default car into caryard, since this guy requires special treatment, but also needs to be included in all this
-      x.addEventListener('click', function(e) {
-        dets[0].textContent = '';
-        if (cont.classList.contains('hide')) {
-          cont.classList.remove('hide');
-        }
-        let k = omni.keyz.indexOf(x.classList[1]);
-        txt.textContent = mechanic.names[k];
-        dets[0].textContent += `$${omni.vals.coin[k] * date.noEle.valueAsNumber} for your ${date.noEle.valueAsNumber} days away`;
-        dets[1].classList.add('btn', 'block');
-        dets[1].textContent = btnTxt[c];
-        txt.append(...dets);
-        dets[1].addEventListener('click', function() {
-          if (!c) {
-            c++;
-            cartograph(x);
-          } else {
-            c--;
-            geo.goOff.reverse();
-            geo.mapVis.reverse();
+  let carChat = {
+    c: 0,
+    // v: undefined,
+    cont: document.querySelector('.v-info'),
+    txt: document.querySelector('.v-txt-ch'),
+    btnTxt: ['Calculate gas efficiency', 'Choose another vechicle'],
+    dirc: ['normal', 'reverse'],
+    addInfo() {
+      [...mechanic.caryard.children, car.thingItself].forEach(x => {
+        x.addEventListener('click', function() {
+          // carChat.v = x;
+          let k = omni.keyz.indexOf(x.classList[1]);
+          let p = document.createElement('p');
+          let b = document.createElement('button');
+          if (carChat.cont.classList.contains('hide')) {
+            carChat.cont.classList.remove('hide');
           }
-          dets[1].textContent = btnTxt[c];
-        });
-        // geo.gasPedal = dets[1];
-      }, false);
-    });
-  }
+          carChat.txt.textContent = mechanic.names[k];
+          p.textContent += `$${omni.vals.coin[k] * date.noEle.valueAsNumber} for your ${date.noEle.valueAsNumber} days away`;
+          b.classList.add('btn', 'block');
+          b.textContent = carChat.btnTxt[carChat.c];
+          let inf = [p, b];
+          carChat.txt.append(...inf);
+          b.addEventListener('click', function() {
+            // if (carChat.c) {
+              // carChat.c--;
+            // } else {
+              // carChat.c++;
+            // }
+            cartograph(x);
+            b.textContent = carChat.btnTxt[carChat.c];
+          }, false);
+        }, false);
+      });
+    }
+  };
+
+  // function carChat() {
+  //   // for presenting car info and data calcs
+  //   let c = 0;
+  //   let cont = document.querySelector('.v-info');
+  //   let txt = document.querySelector('.v-txt-ch');
+  //   let dets = [document.createElement('p'), document.createElement('button')];
+  //   let btnTxt = ['Calculate gas efficiency', 'Choose another vechicle'];
+  //   [...mechanic.caryard.children, car.thingItself].forEach(x => {
+  //   // spread used here otherwise end up w a 2d arr -- don't want to push default car into caryard, since this guy requires special treatment, but also needs to be included in all this
+  //     x.addEventListener('click', function(e) {
+  //       dets[0].textContent = '';
+  //       if (cont.classList.contains('hide')) {
+  //         cont.classList.remove('hide');
+  //       }
+  //       let k = omni.keyz.indexOf(x.classList[1]);
+  //       txt.textContent = mechanic.names[k];
+  //       dets[0].textContent += `$${omni.vals.coin[k] * date.noEle.valueAsNumber} for your ${date.noEle.valueAsNumber} days away`;
+  //       dets[1].classList.add('btn', 'block');
+  //       dets[1].textContent = btnTxt[c];
+  //       txt.append(...dets);
+  //       dets[1].addEventListener('click', function() {
+  //         if (!c) {
+  //           c++;
+  //           cartograph(x, -1);
+  //         } else {
+  //           c--;
+  //           cartograph(x, 1);
+  //         }
+  //         dets[1].textContent = btnTxt[c];
+  //       }, false);
+  //     }, false);
+  //   });
+  // }
 
   // _*_*_*_*_*_*_*_*_| Pg. 3 MAP & GAS |_*_*_*_*_*_*_*_*_*_
 
@@ -522,46 +557,47 @@ import Litepicker from 'litepicker';
   });
 
   let geo = {
-    gasPedal: null,
-    clkd: null,
     cont: document.querySelector('.map-cont'),
-    goOff: null,
-    mbVis: null,
-    mapVis: null,
-    // off: [],
     init() {
       this.cont.style.left = `${init.w * 2}px`;
     }
   };
 
   function cartograph(v) {
-    geo.clkd = v;
-    // where argument is vechicle clicked
-    let off = [...mechanic.caryard.children, car.thingItself].filter(x => x !== v);
-    geo.goOff = anime({
-      targets: off,
-      translateX: init.w + 1000,
-      easing: 'easeOutQuad',
-      duration: 2600
-    });
+    let irreV = [...mechanic.caryard.children, car.thingItself].filter(x => x !== v);
     let s = v.attributes.src.nodeValue;
     if (!s.includes('glow')) {
       v.src = `../img/glow${s.slice(7)}`;
     }
-    if (v.classList.contains('mb')) {
-      geo.mbVis = anime({
-        targets: v,
-        translateX: -init.w / 1.6,
-        easing: 'easeOutQuad',
-        duration: 1200
-      });
-    }
-    geo.mapVis = anime({
+    anime({
       targets: geo.cont,
       translateX: -init.w * 1.6,
       easing: 'easeOutQuad',
-      duration: 1000
+      direction: carChat.dirc[carChat.c],
+      duration: 1200,
+      complete: function() {
+        if (carChat.c) {
+          carChat.c--;
+        } else {
+          carChat.c++;
+        }
+        console.log(carChat.c);
+      }
     });
+    // anime({
+    //   targets: irreV,
+    //   translateX: init.w + 1000,
+    //   easing: 'easeOutQuad',
+    //   direction: carChat.dirc[carChat.c],
+    //   duration: 2600
+    // });
+    // anime({
+    //   targets: v,
+    //   translateX: init.w / 1.6,
+    //   easing: 'easeOutQuad',
+    //   direction: carChat.dirc[carChat.c],
+    //   duration: 1200
+    // });
   }
 
   function gasC(d) {
