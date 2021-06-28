@@ -421,7 +421,7 @@ import Litepicker from 'litepicker';
     }
   }
 
-  // _*_*_*_*_*_*_*_*_| Pg. 3 CAR SELECT |_*_*_*_*_*_*_*_*_*_
+  // _*_*_*_*_*_*_*_*_| Pg. 3 CARS GAS & MAPS |_*_*_*_*_*_*_*_*_*_
 
   function chosen1() {
     for (let i = 0; i < omni.keyz.length; i++) {
@@ -445,6 +445,7 @@ import Litepicker from 'litepicker';
       // since default car alr on screen, a. don't wanna add it again and b. can drive offscreen into the abyss
       if (this.opts.includes('car')) {
         this.opts = this.opts.filter(x => x !== 'car');
+        car.thingItself.addEventListener('click', carChat, false);
       } else {
         car.thingItself.style.zIndex = '-3';
         // otherwise drives in front of mini n looks straight up silly
@@ -468,81 +469,76 @@ import Litepicker from 'litepicker';
         c.style.right = `${-init.w}px`;
         glow(c);
         this.caryard.appendChild(c);
-        carChat.addInfo();
+        // carChat.addInfo();
+        c.addEventListener('click', carChat, false);
       });
     }
   };
 
-  let carChat = {
+  let geo = {
+    cont: document.querySelector('.map-cont'),
+    clkd:
+    init() {
+      this.cont.style.left = `${init.w * 2}px`;
+    }
+  };
+
+  let gas = {
     c: 0,
-    // v: undefined,
+    btnTxt: ['Calculate gas costs', 'Choose another vechicle'],
     cont: document.querySelector('.v-info'),
     txt: document.querySelector('.v-txt-ch'),
-    btnTxt: ['Calculate gas efficiency', 'Choose another vechicle'],
-    dirc: ['normal', 'reverse'],
-    addInfo() {
-      [...mechanic.caryard.children, car.thingItself].forEach(x => {
-        x.addEventListener('click', function() {
-          // carChat.v = x;
-          let k = omni.keyz.indexOf(x.classList[1]);
-          let p = document.createElement('p');
-          let b = document.createElement('button');
-          if (carChat.cont.classList.contains('hide')) {
-            carChat.cont.classList.remove('hide');
-          }
-          carChat.txt.textContent = mechanic.names[k];
-          p.textContent += `$${omni.vals.coin[k] * date.noEle.valueAsNumber} for your ${date.noEle.valueAsNumber} days away`;
-          b.classList.add('btn', 'block');
-          b.textContent = carChat.btnTxt[carChat.c];
-          let inf = [p, b];
-          carChat.txt.append(...inf);
-          b.addEventListener('click', function() {
-            // if (carChat.c) {
-              // carChat.c--;
-            // } else {
-              // carChat.c++;
-            // }
-            cartograph(x);
-            b.textContent = carChat.btnTxt[carChat.c];
-          }, false);
-        }, false);
-      });
-    }
+    mb: document.querySelector('.mb'),
+    irre: [...mechanic.caryard.children, car.thingItself]
   };
 
-  // function carChat() {
-  //   // for presenting car info and data calcs
-  //   let c = 0;
-  //   let cont = document.querySelector('.v-info');
-  //   let txt = document.querySelector('.v-txt-ch');
-  //   let dets = [document.createElement('p'), document.createElement('button')];
-  //   let btnTxt = ['Calculate gas efficiency', 'Choose another vechicle'];
-  //   [...mechanic.caryard.children, car.thingItself].forEach(x => {
-  //   // spread used here otherwise end up w a 2d arr -- don't want to push default car into caryard, since this guy requires special treatment, but also needs to be included in all this
-  //     x.addEventListener('click', function(e) {
-  //       dets[0].textContent = '';
-  //       if (cont.classList.contains('hide')) {
-  //         cont.classList.remove('hide');
-  //       }
-  //       let k = omni.keyz.indexOf(x.classList[1]);
-  //       txt.textContent = mechanic.names[k];
-  //       dets[0].textContent += `$${omni.vals.coin[k] * date.noEle.valueAsNumber} for your ${date.noEle.valueAsNumber} days away`;
-  //       dets[1].classList.add('btn', 'block');
-  //       dets[1].textContent = btnTxt[c];
-  //       txt.append(...dets);
-  //       dets[1].addEventListener('click', function() {
-  //         if (!c) {
-  //           c++;
-  //           cartograph(x, -1);
-  //         } else {
-  //           c--;
-  //           cartograph(x, 1);
-  //         }
-  //         dets[1].textContent = btnTxt[c];
-  //       }, false);
-  //     }, false);
-  //   });
-  // }
+  const gasPedal = [
+    anime({
+      targets: geo.cont,
+      translateX: -init.w * 1.6,
+      easing: 'linear',
+      // direction: 'normal',
+      duration: 1000,
+      autoplay: false
+    }),
+    anime({
+      targets: gas.mb,
+      translateX: init.w / 1.6,
+      easing: 'easeOutExpo',
+      duration: 1800,
+      autoplay: false
+    })
+  ];
+
+  function carChat() {
+    let k = omni.keyz.indexOf(this.classList[1]);
+    let v = this;
+    gas.irre = [...mechanic.caryard.children, car.thingItself].filter(x => x !== v);
+    const undefineUrself = anime({
+      targets: gas.irre,
+      translateX: init.w + 1000,
+      easing: 'easeOutExpo',
+      duration: 2600,
+      autoplay: false
+    });
+
+    gasPedal.push(undefineUrself);
+
+    const inf = [document.createElement('p'), document.createElement('button')];
+    if (gas.cont.classList.contains('hide')) {
+      gas.cont.classList.remove('hide');
+    }
+    inf[1].classList.add('btn', 'block');
+    inf[1].textContent = gas.btnTxt[gas.c % 2];
+    gas.txt.textContent = mechanic.names[k];
+    inf[0].textContent += `$${omni.vals.coin[k] * date.noEle.valueAsNumber} for your ${date.noEle.valueAsNumber} days away`;
+    gas.txt.append(...inf);
+    inf[1].addEventListener('click', function() {
+      gas.c++;
+      cartograph(...gasPedal);
+      inf[1].textContent = gas.btnTxt[gas.c % 2];
+    }, false);
+  }
 
   // _*_*_*_*_*_*_*_*_| Pg. 3 MAP & GAS |_*_*_*_*_*_*_*_*_*_
 
@@ -556,49 +552,41 @@ import Litepicker from 'litepicker';
     zoom: 5
   });
 
-  let geo = {
-    cont: document.querySelector('.map-cont'),
-    init() {
-      this.cont.style.left = `${init.w * 2}px`;
-    }
-  };
+  function cartograph(x) {
 
-  function cartograph(v) {
-    let irreV = [...mechanic.caryard.children, car.thingItself].filter(x => x !== v);
-    let s = v.attributes.src.nodeValue;
-    if (!s.includes('glow')) {
-      v.src = `../img/glow${s.slice(7)}`;
-    }
-    anime({
-      targets: geo.cont,
-      translateX: -init.w * 1.6,
-      easing: 'easeOutQuad',
-      direction: carChat.dirc[carChat.c],
-      duration: 1200,
-      complete: function() {
-        if (carChat.c) {
-          carChat.c--;
-        } else {
-          carChat.c++;
-        }
-        console.log(carChat.c);
+    // if (!v.classList.contains('mb')) {
+    //   anis = [gasPedal[0]];
+    // }
+
+    // gas.irre = [...mechanic.caryard.children, car.thingItself].filter(x => x !== v);
+
+
+
+
+    // anis.push(undefineUrself);
+    gasPedal.forEach(x => {
+      x.play();
+      x.finished.then(() => {
+        x.reverse();
+      });
+      if (!gas.c % 2 && x.completed()) {
+        // x.finished.then(() => {
+          x.play();
+        // });
       }
+      console.log(x);
     });
-    // anime({
-    //   targets: irreV,
-    //   translateX: init.w + 1000,
-    //   easing: 'easeOutQuad',
-    //   direction: carChat.dirc[carChat.c],
-    //   duration: 2600
+
+    // gasPedal[0].play();
+    // gasPedal[0].finished.then(() => {
+    //   gasPedal[0].reverse();
     // });
-    // anime({
-    //   targets: v,
-    //   translateX: init.w / 1.6,
-    //   easing: 'easeOutQuad',
-    //   direction: carChat.dirc[carChat.c],
-    //   duration: 1200
-    // });
+    // if (!gas.c % 2) {
+    //   gasPedal[0].play();
+    // }
   }
+
+
 
   function gasC(d) {
     distCont.textContent = '';
