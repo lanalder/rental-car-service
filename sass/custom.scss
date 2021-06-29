@@ -15,7 +15,7 @@
 
 @mixin inpTxt {
   font-weight: lighter;
-  font-size: 2rem !important;
+  font-size: 2em !important;
 }
 
 @mixin cssGlow {
@@ -23,10 +23,6 @@
   box-shadow: 0 0 9px #ddd;
   -webkit-box-sizing: content-box;
   box-sizing: content-box;
-}
-
-@mixin hoverGlow {
-
 }
 
 $pads: 1vh 1vw 1vh 1vw !important;
@@ -115,8 +111,8 @@ p {
 }
 
 .ppl-no {
-  @include inpTxt
-  float: bottom;
+  @include inpTxt;
+  font-family: 'IBM Plex Sans', sans-serif;
   margin-top: 9vh !important;
   width: 3.9rem;
   height: 3.6rem;
@@ -135,24 +131,35 @@ p {
   @include cssGlow;
   @include qTxt;
   padding: $pads;
-  height: 45vh;
+  height: 40vh;
   width: 33vw;
 }
 
 .changing-days {
-  display: flex;
-  justify-content: center;
-  flex-direction: row;
-  margin-top: 2vh !important;
+  // display: flex;
+  // justify-content: center;
+  // flex-direction: row;
+  // margin-top: vh !important;
+  padding-bottom: 2vh;
 }
 
 .day-no {
-  @include inpTxt;
-  width: 3.6rem;
+  @include most;
+  top: 20vh;
+  margin-left: 3.9vw !important;
+  font-size: 1.6rem !important;
+  font-weight: lighter !important;
+  width: 4.2rem;
 }
 
 .human-form-day {
-  font-size: 0.9rem;
+  font-size: 1.1rem;
+  padding-top: 10px;
+}
+
+.calendar {
+  float: right;
+  margin-right: 3vw !important;
 }
 
 /* vechicle select */
@@ -178,7 +185,7 @@ p {
 }
 
 .car {
-  width: 33vw;
+  width: 30vw;
 }
 
 .mn {
@@ -206,7 +213,8 @@ p {
 }
 
 .btn {
-  margin-top: 1vh !important;
+  margin-top: 2vh !important;
+  width: 80%;
 }
 
 /* map */

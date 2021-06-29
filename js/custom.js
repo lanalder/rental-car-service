@@ -146,6 +146,12 @@ import Litepicker from 'litepicker';
     }
   };
 
+  let errorTxt = {
+    ppl: ['Cannot rent a car for nobody! Please select at least 1 person', 'Sorry! Rentals fit up to 6 people per vechicle'],
+    date: ['You might want it for at least a day', 'Sorry! Rentals only have up to 15 days'],
+    vech: ['Sorry! There are no available vechicles for your selections. Please go back and change your answers if you want to try again :)', 'These vechicles are well-suited for your holiday! Click on them for pricing & further info, or try going back and changing your answers to see other options'];
+  }
+
   // _*_*_*_*_*_*_*_*_| ROAD (page) SIGNS |_*_*_*_*_*_*_*_*_*_
 
   let signs = {
@@ -187,7 +193,6 @@ import Litepicker from 'litepicker';
   };
 
   let traffic = {
-    // poss look into doing that extend / inheritance thing?
     trf: [document.querySelector('.grntrf'), document.querySelector('.redtrf')],
     rp: [],
     anisign: 0,
@@ -230,6 +235,9 @@ import Litepicker from 'litepicker';
   signs.pS[1].addEventListener('click', function() {
     if (signs.page === 2 && traffic.rp[1].classList.contains('hide')) {
       glow(car.thingItself);
+      if (date.noEle.valueAsNumber > 10 && ppl.no < 2) {
+        mechanic.txt.textContent = errorTxt.vech[0];
+      }
       animate(1);
     } else if (signs.page === 3) {
       reverse();
@@ -294,9 +302,9 @@ import Litepicker from 'litepicker';
         // interesting that the argument here doesn't seem strictly necessary?
       }
       if (ppl.noEle.valueAsNumber > 6) {
-        document.querySelector('.ppl-msg').textContent = "Sorry! Rentals fit up to 6 people per vechicle";
+        document.querySelector('.ppl-msg').textContent = errorTxt.ppl[1];
       } else {
-        document.querySelector('.ppl-msg').textContent = "Cannot rent a car for nobody! Please select at least 1 person";
+        document.querySelector('.ppl-msg').textContent = errorTxt.ppl[0];
         ppl.chrs.forEach(x => {
           if (x.src.includes('inblack')) {
             x.src = x.attributes.src.nodeValue.slice(0, 12) + x.attributes.src.nodeValue.slice(19);
@@ -409,10 +417,10 @@ import Litepicker from 'litepicker';
       if (!go) {
         traffic.lightChange(traffic.rp);
       }
-      if (!date.noEle.valueAsNumber) {
-        date.txtEle.textContent = 'You might want it for at least a day';
+      if (date.noEle.valueAsNumber === 0) {
+        date.txtEle.textContent = errorTxt.date[0];
       } else if (date.noEle.valueAsNumber >= 15) {
-        date.txtEle.textContent = 'Sorry! Rentals only have up to 15 days';
+        date.txtEle.textContent = errorTxt.date[1];
       }
     } else {
       if (go) {
@@ -477,7 +485,7 @@ import Litepicker from 'litepicker';
 
   let geo = {
     cont: document.querySelector('.map-cont'),
-    clkd:
+    clkd: null,
     init() {
       this.cont.style.left = `${init.w * 2}px`;
     }
@@ -497,32 +505,26 @@ import Litepicker from 'litepicker';
       targets: geo.cont,
       translateX: -init.w * 1.6,
       easing: 'linear',
-      // direction: 'normal',
       duration: 1000,
       autoplay: false
     }),
-    anime({
-      targets: gas.mb,
-      translateX: init.w / 1.6,
-      easing: 'easeOutExpo',
-      duration: 1800,
-      autoplay: false
-    })
+    null
   ];
 
   function carChat() {
     let k = omni.keyz.indexOf(this.classList[1]);
-    let v = this;
-    gas.irre = [...mechanic.caryard.children, car.thingItself].filter(x => x !== v);
+    geo.clkd = this;
+    gas.irre = [car.thingItself, ...mechanic.caryard.children].filter(x => x !== geo.clkd);
+
     const undefineUrself = anime({
       targets: gas.irre,
-      translateX: init.w + 1000,
-      easing: 'easeOutExpo',
-      duration: 2600,
+      translateX: 1500,
+      easing: 'linear',
+      duration: 500,
       autoplay: false
     });
 
-    gasPedal.push(undefineUrself);
+    gasPedal[1] = undefineUrself;
 
     const inf = [document.createElement('p'), document.createElement('button')];
     if (gas.cont.classList.contains('hide')) {
@@ -533,60 +535,50 @@ import Litepicker from 'litepicker';
     gas.txt.textContent = mechanic.names[k];
     inf[0].textContent += `$${omni.vals.coin[k] * date.noEle.valueAsNumber} for your ${date.noEle.valueAsNumber} days away`;
     gas.txt.append(...inf);
+
     inf[1].addEventListener('click', function() {
+      resetLines();
       gas.c++;
-      cartograph(...gasPedal);
+      gasPedal.forEach(a => { cartograph(a); });
+
       inf[1].textContent = gas.btnTxt[gas.c % 2];
     }, false);
   }
 
-  // _*_*_*_*_*_*_*_*_| Pg. 3 MAP & GAS |_*_*_*_*_*_*_*_*_*_
+  function resetLines() {
+    distCont.textContent = 'Click on the map to draw your route & get an estimate for how much gas will be used';
+    geojson = {
+      'type': 'FeatureCollection',
+      'features': []
+    };
+    linestring = {
+        'type': 'Feature',
+        'geometry': {
+          'type': 'LineString',
+          'coordinates': []
+      }
+    };
+  }
 
   mapboxgl.accessToken = 'pk.eyJ1IjoibGFuYWxkZXIiLCJhIjoiY2tweGlqd2RmMWVyajJ2b2lrejYzbDZ5diJ9.ELtetZkKKBOunIgDPByWYQ';
 
   var map = new mapboxgl.Map({
     container: document.querySelector('.map'),
     style: 'mapbox://styles/mapbox/streets-v11',
-    // center: [167.33695575335665, -41.25361608045145],
     center: [174.74178362117001, -41.079950115189185],
-    zoom: 5
+    zoom: 4.5
   });
 
   function cartograph(x) {
-
-    // if (!v.classList.contains('mb')) {
-    //   anis = [gasPedal[0]];
-    // }
-
-    // gas.irre = [...mechanic.caryard.children, car.thingItself].filter(x => x !== v);
-
-
-
-
-    // anis.push(undefineUrself);
-    gasPedal.forEach(x => {
-      x.play();
-      x.finished.then(() => {
-        x.reverse();
-      });
-      if (!gas.c % 2 && x.completed()) {
-        // x.finished.then(() => {
-          x.play();
-        // });
-      }
-      console.log(x);
+    // animation sucks
+    if (x.completed) {
+      x.restart();
+    }
+    x.play();
+    x.finished.then(() => {
+      x.reverse();
     });
-
-    // gasPedal[0].play();
-    // gasPedal[0].finished.then(() => {
-    //   gasPedal[0].reverse();
-    // });
-    // if (!gas.c % 2) {
-    //   gasPedal[0].play();
-    // }
   }
-
-
 
   function gasC(d) {
     distCont.textContent = '';
@@ -615,7 +607,6 @@ import Litepicker from 'litepicker';
     anime({
       targets: inpBits,
       translateX: dirc * (-((init.w / 1.1) * (signs.page - 1) + ((signs.page - 1) * 120))),
-      // don't have a clue as to why those numbers work
       easing: 'linear',
       duration: 1500
     });
@@ -666,9 +657,6 @@ import Litepicker from 'litepicker';
         // the + signs.page % 2 is so that the text of signs reflects the back n forth nature of if they're prev or next at that page
       });
     });
-    // }
-    // signs.page++;
-    // road.animark = 0;
   }
 
   function reverse() {
@@ -696,20 +684,6 @@ import Litepicker from 'litepicker';
     }
   }
 
-  //
-  // let geo = {
-  //   cont: document.querySelector('.map'),
-  //   init() {
-  //     this.cont.style.width = `${inProptn(0, 3)}px`;
-  //     this.cont.style.height = `${inProptn(1, 3)}px`;
-  //     document.querySelector('.map-cont').style.left = `${init.w * 2}px`;
-  //   }
-  // };
-  //
-  // let geoInfo = {
-  //
-  // }
-
   function tailor() {
     init.setScl();
     road.markings();
@@ -718,7 +692,6 @@ import Litepicker from 'litepicker';
     signs.draw();
     traffic.draw(traffic.trf, 0);
     car.position();
-    // grass.draw();
     date.init();
     mechanic.init();
   }
@@ -735,17 +708,6 @@ import Litepicker from 'litepicker';
       : Math.round((vw * 100 / init.w) * 100);
   }
 
-  // function ghost() {
-  //   inpBits.forEach(x => {
-  //     console.log(x.style.left, x.style.right, x.style.transform);
-  //     if (x.style.left > init.w || x.style.transform < 0) {
-  //       x.classList.add('hide');
-  //     } else {
-  //       x.classList.remove('hide');
-  //     }
-  //   })
-  // }
-
   picker.ui.addEventListener('click', datedealer, false);
 
   function glow(el) {
@@ -761,14 +723,6 @@ import Litepicker from 'litepicker';
       });
     }, false);
   }
-
-  // glow(car.thingItself);
-
-
-  // poke(ppl.no);
-
-  // // cache was annoying
-  // date.noEle.value = 1;
 
   'load resize'.split(' ').forEach(function(e) {
     // rescale things on both page load n resize
