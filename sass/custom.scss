@@ -131,7 +131,7 @@ p {
   @include cssGlow;
   @include qTxt;
   padding: $pads;
-  height: 40vh;
+  height: 42vh;
   width: 33vw;
 }
 
@@ -140,26 +140,26 @@ p {
   // justify-content: center;
   // flex-direction: row;
   // margin-top: vh !important;
-  padding-bottom: 2vh;
+  padding-bottom: 1.7vh;
 }
 
 .day-no {
   @include most;
   top: 20vh;
-  margin-left: 3.9vw !important;
+  margin-left: 1.6vw !important;
   font-size: 1.6rem !important;
   font-weight: lighter !important;
   width: 4.2rem;
 }
 
 .human-form-day {
-  font-size: 1.1rem;
-  padding-top: 10px;
+  font-size: 0.9rem;
+  padding-top: 6px;
 }
 
 .calendar {
   float: right;
-  margin-right: 3vw !important;
+  margin-right: 1.6vw !important;
 }
 
 /* vechicle select */
@@ -190,7 +190,7 @@ p {
 
 .mn {
   bottom: 8vh;
-  z-index: 5;
+  z-index: 50;
 }
 
 .cpv {
@@ -213,7 +213,7 @@ p {
 }
 
 .btn {
-  margin-top: 2vh !important;
+  margin-top: 1.6vh !important;
   width: 80%;
 }
 
@@ -228,12 +228,12 @@ p {
 
 .map {
   width: 100%;
-  height: 85%;
+  height: 80%;
 }
 
 #distance {
   font-weight: lighter;
-  font-size: 1rem;
+  font-size: 0.9rem;
   text-align: center;
   position: sticky;
   width: 90%;
