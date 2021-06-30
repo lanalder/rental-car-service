@@ -603,9 +603,9 @@ import $ from 'jquery';
     });
     console.log(x);
 
-    // if (gas.irre.includes(car.thingItself) && ) {
-    //   console.log('hgief');
-    // }
+    if (gas.irre.includes(car.thingItself) && ) {
+      console.log('hgief');
+    }
 
   }
 
