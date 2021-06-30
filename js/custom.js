@@ -116,8 +116,7 @@ import $ from 'jquery';
 
     behindMn(w) {
       // sometimes (later on pg. 3) when car drives off it drives on and over the mini, which looks straight up silly, but have 2 account for events only working on positive zInd n animation seemingly only listening to zInd as either positive or negative and none of the finer details
-      w ? this.thingItself.style.zIndex = '5'
-        : this.thingItself.style.zIndex = '-3';
+      return w ? this.thingItself.style.zIndex = '5' : this.thingItself.style.zIndex = '-3';
     }
   };
 
@@ -166,6 +165,7 @@ import $ from 'jquery';
     anisign: 0,
     signPos: [init.w - inProptn(0, 6), init.w * 2 - inProptn(0, 3)],
     pos: {
+      // for positioning, heaped here so don't have 2 look at it n also maybe helps performance only calc'ing once?
       x: [init.w - inProptn(0, 6), init.w * 2 - inProptn(0, 3)],
       h: inProptn(1, 5),
       w: inProptn(0, 150),
@@ -173,10 +173,10 @@ import $ from 'jquery';
       tX: ((7.4 * init.h / 100) * 1.9)
     },
     eraser: [[], [], [], []],
-    // signpost drawings logged here so can be cleared when they move (one per prev / next sign, 3rd for traffic light)
+    // signpost drawings logged here so can be cleared (this.erase()) when they move (one per prev / next sign, last 2 for traffic light)
     get txt() {
-      return [['← Back', `Q. ${this.page - 1} of 3`], ['Next →', `Q. ${this.page} of 3`], ['← Back', `Q. ${this.page - 1} of 3`]]; },
-    // get just used so can reference this.page, prop defs can't ref each other i guess bc they're all read in one initialising sweep instead of called after
+      return [['← Back', `To Q. ${this.page - 1} of 3`], [`On Q. ${this.page} of 3`, 'Next →']]; },
+    // get just used so can reference this.page, prop defs can't ref each other bc they're all read in one initialising sweep instead of called after?
 
     draw() {
       if (this.eraser) {
@@ -255,7 +255,7 @@ import $ from 'jquery';
     } else if (signs.page === 3) {
       reverse();
       animate(0.99);
-      // 0.99 was trial n error n i don't rly understand why it translates exactly a full page backwards except maybe bc 0.99 * var would give us var - 0.var which is essentially a full animation cycle when var is transX, and as a decimal makes new animation value less than current position so brings page back instead of forward like in animate(1) (later i discover animejs' .reverse() method, but as page animations are dynamic (takes an argument) there are philosophically elusive issues involved in returning to a dynamically changing starting point)
+      // 0.99 was trial n error n i don't rly understand why it translates exactly a full page backwards except maybe bc 0.99 * var would give us var - 0.var which is essentially a full animation cycle when var is transX, and as a decimal makes new animation value less than current position so brings page back instead of forward like in animate(1) (later i discover animejs' .reverse() method, but as page animations are dynamic there are philosophically elusive issues in returning to a dynamically changing starting point)
     }
   }, false);
 
@@ -549,15 +549,29 @@ import $ from 'jquery';
     av$: 2.329
   };
 
+  const go = {
+    sign: document.querySelector('.go'),
+    txt: document.querySelector('.go-txt'),
+
+    draw() {
+      this.sign.style.left = `${init.w * 2.45}px`;
+      this.sign.style.top = `${signs.pos.sT - ((17.4 * init.h) / 100)}px`;
+      this.txt.textContent = 'Book →';
+      this.txt.style.left = `${init.w * 2.45 + 53}px`;
+      this.txt.style.top = `${signs.pos.sT - ((17.4 * init.h) / 100) + 93}px`;
+      glow(this.sign);
+    }
+  };
+
   const gasPedal = [
+    null,
     anime({
-      targets: geo.cont,
+      targets: [geo.cont, go.sign, go.txt],
       translateX: -init.w * 1.6,
-      easing: 'linear',
-      duration: 1000,
+      easing: 'easeOutExpo',
+      duration: 1800,
       autoplay: false
-    }),
-    null
+    })
   ];
 
   function carChat() {
@@ -568,11 +582,11 @@ import $ from 'jquery';
     // when parameters are t/f based conditionals can just be the argument!
     car.behindMn(this === car.thingItself);
 
-    gasPedal[1] = anime({
+    gasPedal[0] = anime({
       targets: gas.irre,
-      translateX: 1500,
+      translateX: 1300,
       easing: 'linear',
-      duration: 500,
+      duration: 1800,
       autoplay: false
     });
 
@@ -582,7 +596,7 @@ import $ from 'jquery';
     inf[1].classList.add('btn', 'block');
     inf[1].textContent = gas.btnTxt[gas.c % 2];
     gas.txt.textContent = mechanic.names[k];
-    inf[0].textContent += `$${omni.vals.coin[k] * date.noEle.valueAsNumber} for your ${date.noEle.valueAsNumber} days away`;
+    inf[0].textContent += `$${omni.vals.coin[k] * date.eleAsNo} for your ${date.eleAsNo} days away`;
     gas.txt.append(...inf);
 
     inf[1].addEventListener('click', function() {
@@ -591,8 +605,10 @@ import $ from 'jquery';
       gasPedal.forEach(a => { cartograph(a); });
       inf[1].textContent = gas.btnTxt[gas.c % 2];
     }, false);
+    car.behindMn(gas.c % 2 - 1 && gasPedal[1].changeCompleted);
   }
 
+  // 1st conditional actually for third run through of animation; so it plays, then reverses the dirc for second play when cars come back onscreen / map off, then! (between 2nd n 3rd click) animation is completed, and it restarts from og position n loops
   function cartograph(x) {
     if (x.completed) {
       x.restart();
@@ -601,12 +617,6 @@ import $ from 'jquery';
     x.finished.then(() => {
       x.reverse();
     });
-    console.log(x);
-
-    if (gas.irre.includes(car.thingItself) && ) {
-      console.log('hgief');
-    }
-
   }
 
   function gasC(d) {
@@ -616,7 +626,9 @@ import $ from 'jquery';
     let ind = omni.keyz.indexOf(geo.clkd.classList[1]);
     let gL = Math.round(d / 100 * omni.vals.gas[ind]);
     let lcn = mechanic.names[ind].charAt(0).toLowerCase();
+
     distCont.textContent += `A ${lcn + mechanic.names[ind].substring(1)} will use ${gL} litres of gas for this ${d}km long journey, which comes to roughly $${Math.round(gL * gas.av$)} for fuel`;
+    gas.txt.firstElementChild.textContent = `$${Math.round((omni.vals.coin[ind] * date.eleAsNo) + (gL * gas.av$))} in total`;
   }
 
   function resetLines() {
@@ -652,6 +664,7 @@ import $ from 'jquery';
     anime({
       targets: mainEles,
       translateX: dirc * (-((init.w / 1.1) * (signs.page - 1) + ((signs.page - 1) * 120))),
+      // idk why these numbers work
       easing: 'linear',
       duration: 1500
     });
@@ -677,9 +690,7 @@ import $ from 'jquery';
       mechanic.present();
       anime({
         targets: mechanic.caryard,
-        // translateX: dirc * (-(init.w + vp2px(0, 20))),
         translateX: dirc * ((20 / init.w) * 100 - init.w) - 200,
-        // negative here as well since style target is .right (-init.w in .present) and vechs come from the right
         easing: 'easeOutExpo',
         duration: 3000
       });
@@ -695,14 +706,16 @@ import $ from 'jquery';
         traffic.draw(traffic.rp, 1);
       }
     });
-    let peas = [Array.from(signs.pS[0].children), Array.from(signs.pS[1].children)];
-    // airbnb 4.4 says use spread over array.from however my good reason to not listen to that here is we need a 2d array, n spread flattens it all
-    peas.forEach(x => {
-      x.forEach(y => {
-        y.textContent = signs.txt[peas.indexOf(x) + (signs.page % 2)][x.indexOf(y)];
-        // the + signs.page % 2 is so that the text of signs reflects the back n forth nature of if they're prev or next at that page
-      });
-    });
+
+    const peas = [Array.from(signs.pS[0].children), Array.from(signs.pS[1].children)];
+    // airbnb 4.4 says use spread over array.from however my good reason to not listen to that is we need a 2d array, n spread flattens it all
+    for (let i = 0; i < 2; i++) {
+      // first loop reps signs, second the 2 <p>s in them
+      for (let y = 0; y < 2; y++) {
+        // each sign <p> = the sign that it's in (i) and page we're at % 2 since sign alternates between next / prev on odd / even pages, and then! since there are 3 pages and only 2 signs, % 2 to loop around the array! it's like a 2d circle array, buzzy and then [y] reps what <p> to keep text in right pos
+        peas[i][y].textContent = signs.txt[(i + signs.page % 2) % 2][y];
+      }
+    }
   }
 
   function reverse() {
@@ -738,6 +751,7 @@ import $ from 'jquery';
     geo.init();
     signs.draw();
     traffic.draw(traffic.trf, 0);
+    go.draw();
     mechanic.init();
   }
 

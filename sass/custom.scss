@@ -69,7 +69,8 @@ p {
 }
 
 .page-sign-cont p {
-  font-size: 1.2rem;
+  font-size: 1rem;
+  padding: 0.1rem 0rem 0.1rem 0rem !important;
 }
 
 .moving-blocks {
@@ -160,6 +161,7 @@ p {
 .calendar {
   float: right;
   margin-right: 1.6vw !important;
+  cursor: pointer;
 }
 
 /* vechicle select */
@@ -223,12 +225,12 @@ p {
   @include most;
   top: 20vh;
   width: 35vw;
-  height: 45vh;
+  height: 46vh;
 }
 
 .map {
   width: 100%;
-  height: 80%;
+  height: 88%;
 }
 
 #distance {
@@ -238,6 +240,7 @@ p {
   position: sticky;
   width: 90%;
   margin-left: 5%;
+  // margin-top: 3px;
   height: 12%;
 }
 
@@ -251,4 +254,18 @@ p {
 .grntrf {
   @include most;
   height: 27vh;
+}
+
+.go {
+  @include most;
+  height: 15.9em;
+  cursor: pointer;
+}
+
+.go-txt {
+  @include most;
+  font-weight: bolder;
+  height: 3em;
+  width: 10em;
+  cursor: pointer;
 }
