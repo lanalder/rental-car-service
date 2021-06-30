@@ -28,14 +28,14 @@ import $ from 'jquery';
   ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
   // so that one canvas px = one physical px, otherwise can get blurry on big screens
 
-  const inpBits = Array.from(document.querySelectorAll('.moving-blocks'));
+  const mainEles = Array.from(document.querySelectorAll('.moving-blocks'));
   // all the input-taking / info-giving elements so can carousel them round for the multi-page-site illusion
 
   const init = {
     get w() { return window.innerWidth; },
     get h() { return window.innerHeight; },
     // getter used so that page is sorta reponsive w/o css, & so coords of elements are relative to user and not actual page width, important distinction for a S.P.A.
-    setScl() {
+    setScale() {
       document.body.style.width = `${this.w}px`;
       document.body.style.height = `${this.h}px`;
       // style used on html els and not for canvas, since canvas css doesn't determine actual available coords -- actual obj size defaults to 300x150 n if only css is changed it just scales from that n looks rly bad
@@ -48,31 +48,37 @@ import $ from 'jquery';
   // _*_*_*_*_*_*_*_*_| INITIAL OBJS |_*_*_*_*_*_*_*_*_*_
 
   const road = {
-    // road's h always inProptn(1, 7) and the line w inProptn(0, 9), getters below just used 2 make code more readable
+    animark: 0,
+    // this is for the anime func, the value is changed 2 whatever it's set at over there, so equivalent 2 a translateX value (which can't simply b used bc of canvas, don't wanna move the whole thing but only some of its drawings)
     get y() { return init.h - inProptn(1, 7) * 1.5; },
     get linY() { return this.y + (inProptn(1, 7) / 3); },
     get linH() { return inProptn(1, 7) / 12; },
-    animark: 0,
-    // this is for the anime func, the value is changed 2 whatever it's set at over there, so equivalent 2 a translateX value (which can't simply b used bc of canvas, don't wanna move the whole thing but only some of its drawings)
+    // road's h always inProptn(1, 7) and the line w inProptn(0, 9), getters above just 2 make code more marginally more readable
+
     draw() {
       // drawing curbs first
       const shades = ['#9ca297', '#b1bab0'];
       for (let i = 0; i < 2; i++) {
         ctx.fillStyle = shades[i];
+
         if (i) {
           ctx.translate(0, 3.3);
         }
         ctx.fillRect(0, this.y - (this.linH / 3) * 1.5, init.w, inProptn(1, 7) + (this.linH / 3) * (3 - i * 1.5));
       }
       ctx.translate(0, -3.3);
+
       // road itself
       ctx.fillStyle = 'black';
       ctx.fillRect(0, this.y, init.w, inProptn(1, 7));
+
       this.markings();
     },
+
     markings() {
       // road markings
       let gap = inProptn(0, 9) / 3;
+
       for (let i = 0; i < 18; i++) {
         // 18 is arbitrary but big enough to encompass all 'pages' as well as if site is zoomed out
         ctx.beginPath();
@@ -83,6 +89,7 @@ import $ from 'jquery';
         ctx.lineTo(gap * i + 1.5 - this.animark, this.linY + this.linH);
         ctx.closePath();
         ctx.fill();
+
         gap = inProptn(0, 9) + (inProptn(0, 9) / 1.5);
         // first gap val is just the offset from x=0, after that offset from last line needs 2 include the prev line width
       }
@@ -91,19 +98,26 @@ import $ from 'jquery';
 
   const car = {
     thingItself: null,
+
     position() {
       if (document.querySelector('.car') == null) {
         // not something 2 repeat on resize
         const musty = new Image();
-        musty.src = '../img/car.png';
+        musty.src = 'img/car.png';
         document.getElementsByTagName('body')[0].appendChild(musty);
         this.thingItself = musty;
         this.thingItself.classList.add('v', 'car');
-        // default car not just in html bc then the paths aren't quite the same for all imgs (needed 4 glow) and this was the quick n dirty way to fix that
       }
       this.thingItself.style.bottom = `${inProptn(1, 7) * 1.1}px`;
       this.thingItself.style.zIndex = 5;
+
       grass.draw();
+    },
+
+    behindMn(w) {
+      // sometimes (later on pg. 3) when car drives off it drives on and over the mini, which looks straight up silly, but have 2 account for events only working on positive zInd n animation seemingly only listening to zInd as either positive or negative and none of the finer details
+      w ? this.thingItself.style.zIndex = '5'
+        : this.thingItself.style.zIndex = '-3';
     }
   };
 
@@ -117,6 +131,7 @@ import $ from 'jquery';
     get lawnmower() {
       Array.from(document.querySelector('.grass-cont').children); },
       // getters... eh but not simply a prop nor has a return since those give representation of arr and not the actual thing as it exists in the dom
+
     draw() {
       if (this.lawnmower) {
       // if empty, this is the first init; if true, mow all the old grass and redraw relevant to resize
@@ -125,13 +140,15 @@ import $ from 'jquery';
             x.lastChild.remove();
           }
         }); }
+
       for (let i = 0; i < 4; i++) {
         // 4 lines of grass
         this.soil[i] = document.querySelector(`.grass${i}`);
         this.soil[i].style.width = `${this.amt * init.w}px`;
+
         for (let j = 0; j < this.amt; j++) {
           this.roots[j] = new Image(50, 50);
-          this.roots[j].src = '../img/grs.png';
+          this.roots[j].src = 'img/grs.png';
           this.soil[i].appendChild(this.roots[j]);
         }
       }
@@ -141,18 +158,11 @@ import $ from 'jquery';
     }
   };
 
-  const errorTxt = {
-    ppl: ['Cannot rent a car for nobody! Please select at least 1 person', 'Sorry! Rentals fit up to 6 people per vechicle'],
-    date: ['You might want it for at least a day', 'Sorry! Rentals only have up to 15 days'],
-    vech: ['Sorry! There are no available vechicles for your selections. Please go back and change your answers if you want to try again :)', 'These vechicles are well-suited for your holiday! Click on them for pricing & further info, or try going back and changing your answers to see other options']
-  };
-
   // _*_*_*_*_*_*_*_*_| ROAD (page) SIGNS |_*_*_*_*_*_*_*_*_*_
 
   const signs = {
     page: 1,
     pS: [document.querySelector('.page-sign-1'), document.querySelector('.page-sign-2')],
-    trf: [document.querySelector('.grntrf'), document.querySelector('.redtrf')],
     anisign: 0,
     signPos: [init.w - inProptn(0, 6), init.w * 2 - inProptn(0, 3)],
     pos: {
@@ -167,18 +177,22 @@ import $ from 'jquery';
     get txt() {
       return [['← Back', `Q. ${this.page - 1} of 3`], ['Next →', `Q. ${this.page} of 3`], ['← Back', `Q. ${this.page - 1} of 3`]]; },
     // get just used so can reference this.page, prop defs can't ref each other i guess bc they're all read in one initialising sweep instead of called after
+
     draw() {
       if (this.eraser) {
         this.erase();
       }
       ctx.fillStyle = '#1A1D22';
+
       for (let i = 0; i < 2; i++) {
         this.pS[i].style.top = `${this.pos.sT}px`;
         this.pS[i].style.left = `${this.pos.x[i] - (this.pS[i].clientWidth / 1.98) - this.anisign}px`;
+
         ctx.fillRect(this.pos.x[i] - this.anisign, this.pos.sT, this.pos.w, this.pos.h);
         this.eraser[i].push(this.pos.x[i] - this.anisign - 3, this.pos.sT - 3, this.pos.w + 5, this.pos.h + 5);
       }
     },
+
     erase() {
       this.eraser.forEach(x => {
         ctx.clearRect(x[0], x[1], x[2], x[3]);
@@ -191,17 +205,22 @@ import $ from 'jquery';
     trf: [document.querySelector('.grntrf'), document.querySelector('.redtrf')],
     rp: [0, 0],
     anisign: 0,
+    get onOff() { return this.trf[0].classList.contains('hide'); },
+
     draw(l, n) {
       l.forEach(x => {
         x.style.top = `${signs.pos.sT - ((19 * init.h) / 100)}px`;
         x.style.left = `${signs.pos.x[n] - signs.pos.tX * 1.4 - (this.anisign / 0.9) + (n * 100)}px`;
       });
+
       ctx.fillRect(signs.pos.x[n] - signs.pos.tX - (this.anisign / 0.9) + (n * 100), signs.pos.sT, signs.pos.w, signs.pos.h);
       signs.eraser[2 + n].push(signs.pos.x[n] - signs.pos.tX - (this.anisign / 0.9) + (n * 100) - 3, signs.pos.sT - 3, signs.pos.w + 5, signs.pos.h + 5);
     },
+
     lightChange(l) {
       l.forEach(x => x.classList.toggle('hide'));
     },
+
     clone() {
       for (let i = 0; i < 2; i++) {
         this.rp[i] = $(this.trf[i]).clone()[0];
@@ -228,17 +247,15 @@ import $ from 'jquery';
   signs.pS[1].addEventListener('click', function() {
     if (signs.page === 2 && traffic.rp[1].classList.contains('hide')) {
       glow(car.thingItself);
+
       if (date.noEle.valueAsNumber > 10 && ppl.no < 2) {
         mechanic.txt.textContent = errorTxt.vech[0];
       }
       animate(1);
     } else if (signs.page === 3) {
       reverse();
-      // if (gas.cont.lastChild) {
-        gas.cont.lastChild.remove();
-      // }
       animate(0.99);
-      // 0.99 was trial n error n i don't rly understand why it translates exactly a full page backwards except maybe bc 0.99 * var would give us var - 0.var which is essentially a full animation cycle when var is transX, and as a decimal makes new animation value less than current position so brings page back instead of forward like in animate(1)
+      // 0.99 was trial n error n i don't rly understand why it translates exactly a full page backwards except maybe bc 0.99 * var would give us var - 0.var which is essentially a full animation cycle when var is transX, and as a decimal makes new animation value less than current position so brings page back instead of forward like in animate(1) (later i discover animejs' .reverse() method, but as page animations are dynamic (takes an argument) there are philosophically elusive issues involved in returning to a dynamically changing starting point)
     }
   }, false);
 
@@ -251,13 +268,16 @@ import $ from 'jquery';
     chrs: new Array(6),
     no: 0,
     noEle: document.querySelector('.ppl-no'),
+    get eleAsNo() { return this.noEle.valueAsNumber; },
+    // i like getter i wonder if their reason for existing isn't entirely redundant, lets u access vars as they are dynamically n not bind them to one value at one point in time (if this can't also b done with normal props, idk i haven't tested it here)
+
     draw() {
       while (this.cont.lastChild) {
         this.cont.lastChild.remove();
       }
       for (let i = 0; i < 6; i++) {
         this.chrs[i] = new Image(43, 139);
-        this.chrs[i].src = `../img/${this.picker[i%2]}.png`;
+        this.chrs[i].src = `img/${this.picker[i%2]}.png`;
         poke(this.chrs[i]);
         glow(this.chrs[i]);
         this.cont.appendChild(this.chrs[i]);
@@ -267,21 +287,20 @@ import $ from 'jquery';
 
   function poke(el) {
     el.addEventListener('click', function() {
-
+      let nodeSrc = this.attributes.src.nodeValue;
       if (this.src.includes('inblack')) {
         ppl.no--;
         // lucky that the names r the same length!
-        this.src = this.attributes.src.nodeValue.slice(0, 16) + this.attributes.src.nodeValue.slice(23);
+        this.src = nodeSrc.slice(0, 13) + nodeSrc.slice(20);
 
-        if (!ppl.no && !traffic.trf[0].classList.contains('hide')) {
+        if (!ppl.no && !traffic.onOff) {
           traffic.lightChange(traffic.trf);
         }
-
       } else {
         ppl.no++;
-        this.src = this.attributes.src.nodeValue.slice(0, 16) + 'inblack.png';
+        this.src = nodeSrc.slice(0, 13) + 'inblack.png';
 
-        if (traffic.trf[0].classList.contains('hide')) {
+        if (traffic.onOff) {
           traffic.lightChange(traffic.trf);
         }
       }
@@ -297,30 +316,34 @@ import $ from 'jquery';
     $(ppl.noEle).parsley().validate();
 
     if (!$(ppl.noEle).parsley().isValid()) {
-      traffic.lightChange(traffic.trf);
 
-      if (ppl.noEle.valueAsNumber > 6) {
-        document.querySelector('.ppl-msg').textContent = errorTxt.ppl[1];
+      if (!traffic.onOff) {
+        traffic.lightChange(traffic.trf);
+      }
+      let msg = document.querySelector('.ppl-msg');
+
+      if (ppl.eleAsNo > 6) {
+        msg.textContent = errorTxt.ppl[1];
       } else {
-        document.querySelector('.ppl-msg').textContent = errorTxt.ppl[0];
+        msg.textContent = errorTxt.ppl[0];
         // ensuring all ppl are unselected, since only want to coordinate() when input is valid; also prevents user inp box going below 0 when coord is called
         ppl.chrs.forEach(x => {
+          let nodeSrc = x.attributes.src.nodeValue;
           if (x.src.includes('inblack')) {
-            x.src = x.attributes.src.nodeValue.slice(0, 12) + x.attributes.src.nodeValue.slice(19);
+            x.src = nodeSrc.slice(0, 9) + nodeSrc.slice(16);
           }
         });
       }
-
-      ppl.no = ppl.noEle.valueAsNumber;
+      ppl.no = ppl.eleAsNo;
       // returns on behalf of sign click listeners, only animate forward when true
       return false;
-
     } else {
-      if (traffic.rp[0]) {
+      if (traffic.rp[0] || traffic.onOff) {
         traffic.lightChange(traffic.trf);
       }
+
       coordinate();
-      ppl.no = ppl.noEle.valueAsNumber;
+      ppl.no = ppl.eleAsNo;
       return true;
     }
   }
@@ -337,21 +360,23 @@ import $ from 'jquery';
         diff++;
       }
     });
-    diff = ppl.noEle.valueAsNumber - diff;
+    diff = ppl.eleAsNo - diff;
     // and how far off the user inp is from clicked ppl
 
     if (diff > 0) {
       // ie. if inp field going up
       for (let i = 0; i < diff; i++) {
         const b = chsCh.indexOf(chsCh.find(x => x === true));
+        let nodeSrc = ppl.chrs[b].attributes.src.nodeValue;
         // changes first person not in black to selected
-        ppl.chrs[b].src = ppl.chrs[b].src = ppl.chrs[b].attributes.src.nodeValue.slice(0, 12) + 'inblack.png';
+        ppl.chrs[b].src = ppl.chrs[b].src = nodeSrc.slice(0, 9) + 'inblack.png';
         chsCh[b] = false;
       }
     } else if (diff < 0){
       for (let i = 0; i < Math.abs(diff); i++) {
         const b = chsCh.indexOf(chsCh.find(x => x === false));
-        ppl.chrs[b].src = ppl.chrs[b].attributes.src.nodeValue.slice(0, 12) + ppl.chrs[b].attributes.src.nodeValue.slice(19);
+        let nodeSrc = ppl.chrs[b].attributes.src.nodeValue;
+        ppl.chrs[b].src = nodeSrc.slice(0, 9) + nodeSrc.slice(16);
         chsCh[b] = true;
       }
     }
@@ -376,8 +401,11 @@ import $ from 'jquery';
     txtEle: document.querySelector('.human-form-day'),
     // to present date in a sensible format
     noEle: document.querySelector('.day-no'),
+    get eleAsNo() { return this.noEle.valueAsNumber; },
+
     humanFriendly(d) {
       return d.toDateString().slice(0, -4); },
+
     init() {
       // this.inst[1] = new Date(this.inst[0].getTime() + this.msDays);
       picker.ui.classList.add('block', 'inline');
@@ -390,28 +418,23 @@ import $ from 'jquery';
   };
 
   date.noEle.addEventListener('click', function() {
-    let inpMS = date.inst[0].getTime() + Math.floor(date.msDays * date.noEle.valueAsNumber) - date.msDays;
+    let inpMS = date.inst[0].getTime() + Math.floor(date.msDays * date.eleAsNo) - date.msDays;
     // highlighting the daterange for input in the lil up n down box
     picker.setDateRange(date.inst[0], new Date(inpMS));
   }, false);
 
-
-
   function datedealer() {
     const clkd = picker.getDate();
-
     date.inst[1] = clkd.dateInstance;
     date.inst.sort((x, y) => x.getTime() - y.getTime());
     // to ensure [1] is always the date > [0]
-
     let fd = new Date().toString().substring(0, 10);
     // new date will never quite b the same as new date made a minute ago so instead compare the more humanly accurate day of week month etc
+    date.noEle.valueAsNumber = Math.round((date.inst[1].getTime() - date.inst[0].getTime()) / date.msDays);
 
-    if (date.inst[0].toString().substring(0, 10) === fd) {
-      // dates r so inflexible this is to make sure that if picker date is tomorrow today is included in day count, since today is never over as being the full 84600etc seconds just adding it and tomorrow in a manual + 2
-      date.noEle.valueAsNumber = Math.round((date.inst[1].getTime() - date.inst[0].getTime()) / date.msDays) + 2;
-    } else {
-      date.noEle.valueAsNumber = Math.round((date.inst[1].getTime() - date.inst[0].getTime()) / date.msDays);
+    // this is to ensure that if picker date (1st click) is tomorrow / yesterday, today is included in day count, since today is never over as being the full 84600etc seconds just adding it and tomorrow in a manual + 1
+    if (date.inst[1].getTime() - date.inst[0].getTime() >= date.msDays) {
+      date.noEle.valueAsNumber += 1;
     }
     // highlighting daterange for picked pickled picker dates
     picker.setDateRange(date.inst[0], date.inst[1]);
@@ -426,13 +449,15 @@ import $ from 'jquery';
   function valiDate() {
     let go = traffic.rp[0].classList.contains('hide');
     $('.day-no').parsley().validate();
+
     if (!$('.day-no').parsley().isValid()) {
       if (!go) {
         traffic.lightChange(traffic.rp);
       }
-      if (date.noEle.valueAsNumber === 0) {
+
+      if (date.eleAsNo === 0) {
         date.txtEle.textContent = errorTxt.date[0];
-      } else if (date.noEle.valueAsNumber >= 15) {
+      } else if (date.eleAsNo >= 15) {
         date.txtEle.textContent = errorTxt.date[1];
       }
     } else {
@@ -443,6 +468,15 @@ import $ from 'jquery';
   }
 
   // _*_*_*_*_*_*_*_*_| Pg. 3 CARS GAS & MAPS |_*_*_*_*_*_*_*_*_*_
+
+  mapboxgl.accessToken = 'pk.eyJ1IjoibGFuYWxkZXIiLCJhIjoiY2tweGlqd2RmMWVyajJ2b2lrejYzbDZ5diJ9.ELtetZkKKBOunIgDPByWYQ';
+
+  var map = new mapboxgl.Map({
+    container: document.querySelector('.map'),
+    style: 'mapbox://styles/mapbox/streets-v11',
+    center: [174.74178362117001, -41.079950115189185],
+    zoom: 4.5
+  });
 
   function chosen1() {
     for (let i = 0; i < omni.keyz.length; i++) {
@@ -459,17 +493,19 @@ import $ from 'jquery';
     opts: [],
     anicar: init.w * 2,
     names: ['Motorbike', 'Small car', 'Large car', 'Campervan'],
+
     init() {
       this.txt.style.left = `${init.w * 2}px`;
     },
+
     present() {
       // since default car alr on screen, a. don't wanna add it again and b. can drive offscreen into the abyss
       if (this.opts.includes('car')) {
+        car.behindMn(1);
         this.opts = this.opts.filter(x => x !== 'car');
         car.thingItself.addEventListener('click', carChat, false);
       } else {
-        car.thingItself.style.zIndex = '-3';
-        // otherwise drives in front of mini n looks straight up silly
+        car.behindMn(0);
         anime({
           targets: car.thingItself,
           translateX: init.w + 1000,
@@ -485,7 +521,7 @@ import $ from 'jquery';
       }
       this.opts.forEach(x => {
         let c = new Image();
-        c.src = `../img/${x}.png`;
+        c.src = `img/${x}.png`;
         c.classList.add('v', `${x}`);
         c.style.right = `${-init.w}px`;
         glow(c);
@@ -526,8 +562,11 @@ import $ from 'jquery';
 
   function carChat() {
     let k = omni.keyz.indexOf(this.classList[1]);
+    const inf = [document.createElement('p'), document.createElement('button')];
     geo.clkd = this;
     gas.irre = [car.thingItself, ...mechanic.caryard.children].filter(x => x !== geo.clkd);
+    // when parameters are t/f based conditionals can just be the argument!
+    car.behindMn(this === car.thingItself);
 
     gasPedal[1] = anime({
       targets: gas.irre,
@@ -537,12 +576,9 @@ import $ from 'jquery';
       autoplay: false
     });
 
-    const inf = [document.createElement('p'), document.createElement('button')];
-
     if (gas.cont.classList.contains('hide')) {
       gas.cont.classList.remove('hide');
     }
-
     inf[1].classList.add('btn', 'block');
     inf[1].textContent = gas.btnTxt[gas.c % 2];
     gas.txt.textContent = mechanic.names[k];
@@ -553,9 +589,34 @@ import $ from 'jquery';
       resetLines();
       gas.c++;
       gasPedal.forEach(a => { cartograph(a); });
-
       inf[1].textContent = gas.btnTxt[gas.c % 2];
     }, false);
+  }
+
+  function cartograph(x) {
+    if (x.completed) {
+      x.restart();
+    }
+    x.play();
+    x.finished.then(() => {
+      x.reverse();
+    });
+    console.log(x);
+
+    // if (gas.irre.includes(car.thingItself) && ) {
+    //   console.log('hgief');
+    // }
+
+  }
+
+  function gasC(d) {
+    distCont.textContent = '';
+    // this func is called from last section of code which handles the map / turf.length stuff; d is distance from points
+    d = Math.round(d);
+    let ind = omni.keyz.indexOf(geo.clkd.classList[1]);
+    let gL = Math.round(d / 100 * omni.vals.gas[ind]);
+    let lcn = mechanic.names[ind].charAt(0).toLowerCase();
+    distCont.textContent += `A ${lcn + mechanic.names[ind].substring(1)} will use ${gL} litres of gas for this ${d}km long journey, which comes to roughly $${Math.round(gL * gas.av$)} for fuel`;
   }
 
   function resetLines() {
@@ -571,36 +632,6 @@ import $ from 'jquery';
           'coordinates': []
       }
     };
-  }
-
-  mapboxgl.accessToken = 'pk.eyJ1IjoibGFuYWxkZXIiLCJhIjoiY2tweGlqd2RmMWVyajJ2b2lrejYzbDZ5diJ9.ELtetZkKKBOunIgDPByWYQ';
-
-  var map = new mapboxgl.Map({
-    container: document.querySelector('.map'),
-    style: 'mapbox://styles/mapbox/streets-v11',
-    center: [174.74178362117001, -41.079950115189185],
-    zoom: 4.5
-  });
-
-  function cartograph(x) {
-    if (x.completed) {
-      x.restart();
-    }
-    x.play();
-    x.finished.then(() => {
-      x.reverse();
-    });
-  }
-
-  function gasC(d) {
-    distCont.textContent = '';
-    // this func is called from last section of code which handles the map / turf.length stuff; d is distance from points
-    let ind = omni.keyz.indexOf(geo.clkd.classList[1]);
-    let gL = Math.round(Math.round(d / 100) * omni.vals.gas[ind]);
-
-    let lcn = mechanic.names[ind].charAt(0).toLowerCase();
-
-    distCont.textContent += `A ${lcn + mechanic.names[ind].substring(1)} will use ${gL} litres of gas for this ${d}km long journey, which comes to roughly $${Math.round(gL * gas.av$)} for fuel`;
   }
 
   // _*_*_*_*_*_*_*_*_| HANDY DANDY FUNCS |_*_*_*_*_*_*_*_*_*_
@@ -619,7 +650,7 @@ import $ from 'jquery';
       duration: 3000
     });
     anime({
-      targets: inpBits,
+      targets: mainEles,
       translateX: dirc * (-((init.w / 1.1) * (signs.page - 1) + ((signs.page - 1) * 120))),
       easing: 'linear',
       duration: 1500
@@ -646,7 +677,8 @@ import $ from 'jquery';
       mechanic.present();
       anime({
         targets: mechanic.caryard,
-        translateX: dirc * (-(init.w + vp2px(0, 20))),
+        // translateX: dirc * (-(init.w + vp2px(0, 20))),
+        translateX: dirc * ((20 / init.w) * 100 - init.w) - 200,
         // negative here as well since style target is .right (-init.w in .present) and vechs come from the right
         easing: 'easeOutExpo',
         duration: 3000
@@ -699,7 +731,7 @@ import $ from 'jquery';
   }
 
   function tailor() {
-    init.setScl();
+    init.setScale();
     ppl.draw();
     car.position();
     date.init();
@@ -715,12 +747,6 @@ import $ from 'jquery';
               : Math.ceil(Math.abs(init.h / de));
   }
 
-   function vp2px(d, vw) {
-    // d T = vw/h -> px, d F reverse
-    return d ? Math.round((init.w * vw) / 100)
-      : Math.round((vw * 100 / init.w) * 100);
-  }
-
   picker.ui.addEventListener('click', datedealer, false);
 
   function glow(el) {
@@ -728,9 +754,9 @@ import $ from 'jquery';
       el.addEventListener(x, function() {
         let guide = this.attributes.src.nodeValue;
         if (guide.includes('glow')) {
-          this.src = `../img/${guide.slice(11)}`;
+          this.src = `img/${guide.slice(8)}`;
         } else {
-          this.src = `../img/glow${guide.slice(7)}`;
+          this.src = `img/glow${guide.slice(4)}`;
           // glow is always 4 chrs long
         }
       });
@@ -741,6 +767,12 @@ import $ from 'jquery';
     // rescale things on both page load n resize
     window.addEventListener(e, tailor, false);
   });
+
+  const errorTxt = {
+    ppl: ['Cannot rent a car for nobody! Please select at least 1 person', 'Very sorry, but our rentals can only fit up to 6 people per vechicle'],
+    date: ['You might want it for at least a day', 'Sorry! Rentals only have up to 15 days'],
+    vech: ['Sorry! There are no available vechicles for your selections. Please go back and change your answers if you want to try again :)', 'These vechicles are well-suited for your holiday! Click on them for pricing & further info, or try going back and changing your answers to see other options']
+  };
 
   // _*_*_*_*_*_*_*_*_| the code below is not mine !! -->
   //       https://docs.mapbox.com/mapbox-gl-js/example/measure/ |_*_*_*_*_*_*_*_*_*_
@@ -831,8 +863,7 @@ import $ from 'jquery';
       // Populate the distanceContainer with total distance
       // var value = document.createElement('p');
       // distCont.textContent = 'Total distance: ' + turf.length(linestring).toLocaleString() + 'km';
-
-      gasC(turf.length(linestring).toLocaleString());
+      gasC(turf.length(linestring));
 
         // distCont.appendChild(value);
       }
