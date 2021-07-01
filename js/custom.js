@@ -116,7 +116,7 @@ import $ from 'jquery';
 
     behindMn(w) {
       // sometimes (later on pg. 3) when car drives off it drives on and over the mini, which looks straight up silly, but have 2 account for events only working on positive zInd n animation seemingly only listening to zInd as either positive or negative and none of the finer details
-      return w ? this.thingItself.style.zIndex = '5' : this.thingItself.style.zIndex = '-3';
+      w ? this.thingItself.style.zIndex = '5' : this.thingItself.style.zIndex = '-3';
     }
   };
 
@@ -248,7 +248,7 @@ import $ from 'jquery';
     if (signs.page === 2 && traffic.rp[1].classList.contains('hide')) {
       glow(car.thingItself);
 
-      if (date.noEle.valueAsNumber > 10 && ppl.no < 2) {
+      if (date.eleAsNo > 10 && ppl.no < 2) {
         mechanic.txt.textContent = errorTxt.vech[0];
       }
       animate(1);
@@ -256,6 +256,7 @@ import $ from 'jquery';
       reverse();
       animate(0.99);
       // 0.99 was trial n error n i don't rly understand why it translates exactly a full page backwards except maybe bc 0.99 * var would give us var - 0.var which is essentially a full animation cycle when var is transX, and as a decimal makes new animation value less than current position so brings page back instead of forward like in animate(1) (later i discover animejs' .reverse() method, but as page animations are dynamic there are philosophically elusive issues in returning to a dynamically changing starting point)
+      gas.cont.classList.toggle('hide');
     }
   }, false);
 
@@ -305,6 +306,7 @@ import $ from 'jquery';
         }
       }
       ppl.noEle.value = ppl.no;
+      valiPpl();
     }, false);
   }
 
@@ -313,6 +315,7 @@ import $ from 'jquery';
   });
 
   function valiPpl() {
+    let msg = document.querySelector('.ppl-msg').childNodes[2];
     $(ppl.noEle).parsley().validate();
 
     if (!$(ppl.noEle).parsley().isValid()) {
@@ -320,7 +323,6 @@ import $ from 'jquery';
       if (!traffic.onOff) {
         traffic.lightChange(traffic.trf);
       }
-      let msg = document.querySelector('.ppl-msg');
 
       if (ppl.eleAsNo > 6) {
         msg.textContent = errorTxt.ppl[1];
@@ -338,7 +340,8 @@ import $ from 'jquery';
       // returns on behalf of sign click listeners, only animate forward when true
       return false;
     } else {
-      if (traffic.rp[0] || traffic.onOff) {
+      msg.textContent = errorTxt.ppl[2];
+      if (traffic.onOff) {
         traffic.lightChange(traffic.trf);
       }
 
@@ -459,6 +462,8 @@ import $ from 'jquery';
         date.txtEle.textContent = errorTxt.date[0];
       } else if (date.eleAsNo >= 15) {
         date.txtEle.textContent = errorTxt.date[1];
+      } else {
+        date.txtEle.textContent = errorTxt.date[2];
       }
     } else {
       if (go) {
@@ -481,7 +486,7 @@ import $ from 'jquery';
   function chosen1() {
     for (let i = 0; i < omni.keyz.length; i++) {
       // for each vechicle, as repped by index in omni.val props, check inputted ppl no is within range, n then the same for days, and for the index that passes the test, push that (i as .keyz index === car) to options arr
-      if (ppl.no >= omni.vals.ppl[i][0] && ppl.no <= omni.vals.ppl[i][1] && date.noEle.valueAsNumber >= omni.vals.days[i][0] && date.noEle.valueAsNumber <= omni.vals.days[i][1]) {
+      if (ppl.no >= omni.vals.ppl[i][0] && ppl.no <= omni.vals.ppl[i][1] && date.eleAsNo >= omni.vals.days[i][0] && date.eleAsNo <= omni.vals.days[i][1]) {
         mechanic.opts.push(omni.keyz[i]);
       }
     }
@@ -508,8 +513,8 @@ import $ from 'jquery';
         car.behindMn(0);
         anime({
           targets: car.thingItself,
-          translateX: init.w + 1000,
-          // extra 1k just for safety
+          translateX: init.w + 800,
+          // extra 800 just for safety
           easing: 'easeOutQuad',
           duration: 2600
         });
@@ -555,10 +560,10 @@ import $ from 'jquery';
 
     draw() {
       this.sign.style.left = `${init.w * 2.45}px`;
-      this.sign.style.top = `${signs.pos.sT - ((17.4 * init.h) / 100)}px`;
+      this.sign.style.top = `${signs.pos.sT - ((13 * init.h) / 100)}px`;
       this.txt.textContent = 'Book →';
       this.txt.style.left = `${init.w * 2.45 + 53}px`;
-      this.txt.style.top = `${signs.pos.sT - ((17.4 * init.h) / 100) + 93}px`;
+      this.txt.style.top = `${signs.pos.sT - ((13 * init.h) / 100) + 93}px`;
       glow(this.sign);
     }
   };
@@ -580,24 +585,30 @@ import $ from 'jquery';
     geo.clkd = this;
     gas.irre = [car.thingItself, ...mechanic.caryard.children].filter(x => x !== geo.clkd);
     // when parameters are t/f based conditionals can just be the argument!
-    car.behindMn(this === car.thingItself);
+    car.behindMn(this === car.thingItself && !gas.cont.classList.contains('hide'));
 
     gasPedal[0] = anime({
       targets: gas.irre,
-      translateX: 1300,
+      translateX: 1800,
       easing: 'linear',
-      duration: 1800,
-      autoplay: false
+      duration: 1300,
+      autoplay: false,
+      // when anim on cars done n they're back 2 og pos, make zInd of default car positive again
+      changeComplete: function() {
+        car.behindMn(gas.c % 2 - 1 && gasPedal[0].reversed && geo.clkd !== car.thingItself);
+      }
     });
 
     if (gas.cont.classList.contains('hide')) {
-      gas.cont.classList.remove('hide');
+      gas.cont.classList.toggle('hide');
     }
+
     inf[1].classList.add('btn', 'block');
     inf[1].textContent = gas.btnTxt[gas.c % 2];
     gas.txt.textContent = mechanic.names[k];
     inf[0].textContent += `$${omni.vals.coin[k] * date.eleAsNo} for your ${date.eleAsNo} days away`;
     gas.txt.append(...inf);
+
 
     inf[1].addEventListener('click', function() {
       resetLines();
@@ -605,10 +616,9 @@ import $ from 'jquery';
       gasPedal.forEach(a => { cartograph(a); });
       inf[1].textContent = gas.btnTxt[gas.c % 2];
     }, false);
-    car.behindMn(gas.c % 2 - 1 && gasPedal[1].changeCompleted);
   }
 
-  // 1st conditional actually for third run through of animation; so it plays, then reverses the dirc for second play when cars come back onscreen / map off, then! (between 2nd n 3rd click) animation is completed, and it restarts from og position n loops
+  // 1st conditional actually for third run through of animation; so it plays, then reverses the dirc for second play when cars come back onscreen / map off, then! (between 2nd n 3rd click) animation is completed, and it restarts from og position n loops (i think, idk animations r kinda mysterious)
   function cartograph(x) {
     if (x.completed) {
       x.restart();
@@ -720,7 +730,7 @@ import $ from 'jquery';
 
   function reverse() {
     anime({
-      targets: [mechanic.caryard, geo.cont],
+      targets: [mechanic.caryard, geo.cont, go.sign, go.txt],
       translateX: 0,
       easing: 'easeOutExpo',
       duration: 3000
@@ -783,8 +793,8 @@ import $ from 'jquery';
   });
 
   const errorTxt = {
-    ppl: ['Cannot rent a car for nobody! Please select at least 1 person', 'Very sorry, but our rentals can only fit up to 6 people per vechicle'],
-    date: ['You might want it for at least a day', 'Sorry! Rentals only have up to 15 days'],
+    ppl: ['Cannot rent a car for nobody! Please select at least 1 person', 'Very sorry, but our rentals can only fit up to 6 people per vechicle', 'Select how many people you will be travelling with:'],
+    date: ['You might want it for at least a day', 'Sorry! Rentals only have up to 15 days', 'For how long will you need your rental?'],
     vech: ['Sorry! There are no available vechicles for your selections. Please go back and change your answers if you want to try again :)', 'These vechicles are well-suited for your holiday! Click on them for pricing & further info, or try going back and changing your answers to see other options']
   };
 
