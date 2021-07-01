@@ -41,6 +41,7 @@ import $ from 'jquery';
       // style used on html els and not for canvas, since canvas css doesn't determine actual available coords -- actual obj size defaults to 300x150 n if only css is changed it just scales from that n looks rly bad
       canvas.width = this.w;
       canvas.height = this.h;
+
       road.draw();
     }
   };
@@ -60,7 +61,7 @@ import $ from 'jquery';
       const shades = ['#9ca297', '#b1bab0'];
       for (let i = 0; i < 2; i++) {
         ctx.fillStyle = shades[i];
-
+        // curbs just big rects mildly translated so some shading
         if (i) {
           ctx.translate(0, 3.3);
         }
@@ -80,7 +81,7 @@ import $ from 'jquery';
       let gap = inProptn(0, 9) / 3;
 
       for (let i = 0; i < 18; i++) {
-        // 18 is arbitrary but big enough to encompass all 'pages' as well as if site is zoomed out
+        // 18 is arbitrary but big enough to encompass all 'pages' as well as if site is zoomed out (to a point, prolly best viewing at 1276x718)
         ctx.beginPath();
         ctx.fillStyle = 'white';
         ctx.moveTo(gap * i + 6 - this.animark, this.linY);
@@ -91,7 +92,7 @@ import $ from 'jquery';
         ctx.fill();
 
         gap = inProptn(0, 9) + (inProptn(0, 9) / 1.5);
-        // first gap val is just the offset from x=0, after that offset from last line needs 2 include the prev line width
+        // first gap val is just the offset from x = 0, after that offset from last line needs 2 include the prev line width
       }
     }
   };
@@ -115,8 +116,8 @@ import $ from 'jquery';
     },
 
     behindMn(w) {
-      // sometimes (later on pg. 3) when car drives off it drives on and over the mini, which looks straight up silly, but have 2 account for events only working on positive zInd n animation seemingly only listening to zInd as either positive or negative and none of the finer details
-      w ? this.thingItself.style.zIndex = '5' : this.thingItself.style.zIndex = '-3';
+      // sometimes (later on pg. 3) when car drives off it drives on and over the mini, which looks straight up silly, but have 2 account for events only working on positive zInd & animation seemingly only listening to zInd as either positive or negative and none of the finer details
+      return w ? this.thingItself.style.zIndex = '5' : this.thingItself.style.zIndex = '-3';
     }
   };
 
@@ -134,11 +135,12 @@ import $ from 'jquery';
     draw() {
       if (this.lawnmower) {
       // if empty, this is the first init; if true, mow all the old grass and redraw relevant to resize
-        this.lawnmower.forEach( x => {
+        this.lawnmower.forEach((x) => {
           while (x.lastChild) {
             x.lastChild.remove();
           }
-        }); }
+        });
+      }
 
       for (let i = 0; i < 4; i++) {
         // 4 lines of grass
@@ -151,7 +153,8 @@ import $ from 'jquery';
           this.soil[i].appendChild(this.roots[j]);
         }
       }
-      this.soil.forEach( x => { x.style.bottom = `${this.soil.indexOf(x) * 30 - 50}px`; });
+      this.soil.forEach((x) => {
+        x.style.bottom = `${this.soil.indexOf(x) * 30 - 50}px`; });
       // all lines just slightly on top of each other n under the road, except for the last
       this.soil[3].style.top = `${road.y - 50 - (road.linH / 3)}px`;
     }
@@ -194,9 +197,8 @@ import $ from 'jquery';
     },
 
     erase() {
-      this.eraser.forEach(x => {
-        ctx.clearRect(x[0], x[1], x[2], x[3]);
-      });
+      this.eraser.forEach((x) => {
+        ctx.clearRect(x[0], x[1], x[2], x[3]); });
       this.eraser = [[], [], [], []];
     }
   };
@@ -208,7 +210,7 @@ import $ from 'jquery';
     get onOff() { return this.trf[0].classList.contains('hide'); },
 
     draw(l, n) {
-      l.forEach(x => {
+      l.forEach((x) => {
         x.style.top = `${signs.pos.sT - ((19 * init.h) / 100)}px`;
         x.style.left = `${signs.pos.x[n] - signs.pos.tX * 1.4 - (this.anisign / 0.9) + (n * 100)}px`;
       });
@@ -218,7 +220,7 @@ import $ from 'jquery';
     },
 
     lightChange(l) {
-      l.forEach(x => x.classList.toggle('hide'));
+      l.forEach((x) => x.classList.toggle('hide'));
     },
 
     clone() {
@@ -278,7 +280,7 @@ import $ from 'jquery';
       }
       for (let i = 0; i < 6; i++) {
         this.chrs[i] = new Image(43, 139);
-        this.chrs[i].src = `img/${this.picker[i%2]}.png`;
+        this.chrs[i].src = `img/${this.picker[i % 2]}.png`;
         poke(this.chrs[i]);
         glow(this.chrs[i]);
         this.cont.appendChild(this.chrs[i]);
@@ -288,7 +290,7 @@ import $ from 'jquery';
 
   function poke(el) {
     el.addEventListener('click', function() {
-      let nodeSrc = this.attributes.src.nodeValue;
+      const nodeSrc = this.attributes.src.nodeValue;
       if (this.src.includes('inblack')) {
         ppl.no--;
         // lucky that the names r the same length!
@@ -315,7 +317,7 @@ import $ from 'jquery';
   });
 
   function valiPpl() {
-    let msg = document.querySelector('.ppl-msg').childNodes[2];
+    const msg = document.querySelector('.ppl-msg').childNodes[2];
     $(ppl.noEle).parsley().validate();
 
     if (!$(ppl.noEle).parsley().isValid()) {
@@ -329,8 +331,8 @@ import $ from 'jquery';
       } else {
         msg.textContent = errorTxt.ppl[0];
         // ensuring all ppl are unselected, since only want to coordinate() when input is valid; also prevents user inp box going below 0 when coord is called
-        ppl.chrs.forEach(x => {
-          let nodeSrc = x.attributes.src.nodeValue;
+        ppl.chrs.forEach((x) => {
+          const nodeSrc = x.attributes.src.nodeValue;
           if (x.src.includes('inblack')) {
             x.src = nodeSrc.slice(0, 9) + nodeSrc.slice(16);
           }
@@ -356,7 +358,7 @@ import $ from 'jquery';
     let chsCh = [true, true, true, true, true, true];
 
     // for finding index of ppl who need a wardrobe change
-    ppl.chrs.forEach(x => {
+    ppl.chrs.forEach((x) => {
       if (x.src.includes('inblack')) {
         chsCh[ppl.chrs.indexOf(x)] = false;
         // now we know who to skip
@@ -370,7 +372,8 @@ import $ from 'jquery';
       // ie. if inp field going up
       for (let i = 0; i < diff; i++) {
         const b = chsCh.indexOf(chsCh.find(x => x === true));
-        let nodeSrc = ppl.chrs[b].attributes.src.nodeValue;
+        const nodeSrc = ppl.chrs[b].attributes.src.nodeValue;
+
         // changes first person not in black to selected
         ppl.chrs[b].src = ppl.chrs[b].src = nodeSrc.slice(0, 9) + 'inblack.png';
         chsCh[b] = false;
@@ -378,7 +381,8 @@ import $ from 'jquery';
     } else if (diff < 0){
       for (let i = 0; i < Math.abs(diff); i++) {
         const b = chsCh.indexOf(chsCh.find(x => x === false));
-        let nodeSrc = ppl.chrs[b].attributes.src.nodeValue;
+        const nodeSrc = ppl.chrs[b].attributes.src.nodeValue;
+
         ppl.chrs[b].src = nodeSrc.slice(0, 9) + nodeSrc.slice(16);
         chsCh[b] = true;
       }
@@ -394,6 +398,8 @@ import $ from 'jquery';
     autoRefresh: true,
     autoApply: true
   });
+
+  picker.ui.addEventListener('click', datedealer, false);
 
   let date = {
     cont: document.querySelector('.date-cont'),
@@ -430,17 +436,24 @@ import $ from 'jquery';
     const clkd = picker.getDate();
     date.inst[1] = clkd.dateInstance;
     date.inst.sort((x, y) => x.getTime() - y.getTime());
-    // to ensure [1] is always the date > [0]
+    // to ensure [1] is always the date > [0]; .sort() sorts according to return
+
     let fd = new Date().toString().substring(0, 10);
     // new date will never quite b the same as new date made a minute ago so instead compare the more humanly accurate day of week month etc
     date.noEle.valueAsNumber = Math.round((date.inst[1].getTime() - date.inst[0].getTime()) / date.msDays);
 
-    // this is to ensure that if picker date (1st click) is tomorrow / yesterday, today is included in day count, since today is never over as being the full 84600etc seconds just adding it and tomorrow in a manual + 1
+    // this is to ensure that if picker date (1st click) is tomorrow / yesterday, today is included in day count, since today is never over as being the full 84600etc seconds just adding it and tomorrow in a manual + 2 (1 for tmrw, 1 for today)
     if (date.inst[1].getTime() - date.inst[0].getTime() >= date.msDays) {
+      date.noEle.valueAsNumber += 2;
+    }
+    // & if today n 1st click pre-today, include only today n not tomorrow... future dev would see this section rewritten entirely, it's kinda buddy (will depend on what time of day this being looked at) but for now just blame the plugin :D
+    if (clkd.getTime() > new Date().getTime()) {
       date.noEle.valueAsNumber += 1;
     }
+
     // highlighting daterange for picked pickled picker dates
     picker.setDateRange(date.inst[0], date.inst[1]);
+
     // letting input box reflect that
     date.txtEle.textContent = `${date.humanFriendly(date.inst[0])} until ${date.humanFriendly(date.inst[1])}`;
   }
@@ -466,6 +479,7 @@ import $ from 'jquery';
         date.txtEle.textContent = errorTxt.date[2];
       }
     } else {
+      // not just else if bc i can't remember why ***** test
       if (go) {
         traffic.lightChange(traffic.rp);
       }
@@ -507,10 +521,12 @@ import $ from 'jquery';
       // since default car alr on screen, a. don't wanna add it again and b. can drive offscreen into the abyss
       if (this.opts.includes('car')) {
         car.behindMn(1);
-        this.opts = this.opts.filter(x => x !== 'car');
+        this.opts = this.opts.filter((x) => x !== 'car');
+
         car.thingItself.addEventListener('click', carChat, false);
       } else {
         car.behindMn(0);
+
         anime({
           targets: car.thingItself,
           translateX: init.w + 800,
@@ -518,13 +534,14 @@ import $ from 'jquery';
           easing: 'easeOutQuad',
           duration: 2600
         });
+
         window.setTimeout(function() {
           car.thingItself.classList.add('hide');
         }, 1400);
         window.clearTimeout();
         // not strictly necessary but good practice ig
       }
-      this.opts.forEach(x => {
+      this.opts.forEach((x) => {
         let c = new Image();
         c.src = `img/${x}.png`;
         c.classList.add('v', `${x}`);
@@ -536,7 +553,7 @@ import $ from 'jquery';
     }
   };
 
-  let geo = {
+  const geo = {
     cont: document.querySelector('.map-cont'),
     clkd: null,
     init() {
@@ -546,7 +563,7 @@ import $ from 'jquery';
 
   let gas = {
     c: 0,
-    btnTxt: ['Calculate gas costs', 'Choose another vechicle'],
+    btnTxt: ['Calculate gas costs', '← Another vechicle'],
     cont: document.querySelector('.v-info'),
     txt: document.querySelector('.v-txt-ch'),
     mb: document.querySelector('.mb'),
@@ -582,8 +599,10 @@ import $ from 'jquery';
   function carChat() {
     let k = omni.keyz.indexOf(this.classList[1]);
     const inf = [document.createElement('p'), document.createElement('button')];
+
     geo.clkd = this;
-    gas.irre = [car.thingItself, ...mechanic.caryard.children].filter(x => x !== geo.clkd);
+    gas.irre = [car.thingItself, ...mechanic.caryard.children].filter((x) => x !== geo.clkd);
+
     // when parameters are t/f based conditionals can just be the argument!
     car.behindMn(this === car.thingItself && !gas.cont.classList.contains('hide'));
 
@@ -593,7 +612,7 @@ import $ from 'jquery';
       easing: 'linear',
       duration: 1300,
       autoplay: false,
-      // when anim on cars done n they're back 2 og pos, make zInd of default car positive again
+      // when anim on cars is done n they're back 2 og pos, make zInd of default car positive again
       changeComplete: function() {
         car.behindMn(gas.c % 2 - 1 && gasPedal[0].reversed && geo.clkd !== car.thingItself);
       }
@@ -606,14 +625,14 @@ import $ from 'jquery';
     inf[1].classList.add('btn', 'block');
     inf[1].textContent = gas.btnTxt[gas.c % 2];
     gas.txt.textContent = mechanic.names[k];
+
     inf[0].textContent += `$${omni.vals.coin[k] * date.eleAsNo} for your ${date.eleAsNo} days away`;
     gas.txt.append(...inf);
-
 
     inf[1].addEventListener('click', function() {
       resetLines();
       gas.c++;
-      gasPedal.forEach(a => { cartograph(a); });
+      gasPedal.forEach((a) => { cartograph(a); });
       inf[1].textContent = gas.btnTxt[gas.c % 2];
     }, false);
   }
@@ -717,13 +736,13 @@ import $ from 'jquery';
       }
     });
 
-    const peas = [Array.from(signs.pS[0].children), Array.from(signs.pS[1].children)];
-    // airbnb 4.4 says use spread over array.from however my good reason to not listen to that is we need a 2d array, n spread flattens it all
+    const peas = [];
+    signs.pS.forEach((x) => peas.push(x.children));
     for (let i = 0; i < 2; i++) {
       // first loop reps signs, second the 2 <p>s in them
       for (let y = 0; y < 2; y++) {
-        // each sign <p> = the sign that it's in (i) and page we're at % 2 since sign alternates between next / prev on odd / even pages, and then! since there are 3 pages and only 2 signs, % 2 to loop around the array! it's like a 2d circle array, buzzy and then [y] reps what <p> to keep text in right pos
         peas[i][y].textContent = signs.txt[(i + signs.page % 2) % 2][y];
+        // each sign <p> = the sign that it's in (i) and page we're at % 2 since sign alternates between next / prev on odd / even pages, and then! since there are 3 pages and only 2 signs, % 2 to loop around the array! and then [y] reps what <p> to keep text in right pos
       }
     }
   }
@@ -771,12 +790,11 @@ import $ from 'jquery';
               : Math.ceil(Math.abs(init.h / de));
   }
 
-  picker.ui.addEventListener('click', datedealer, false);
-
   function glow(el) {
-    'mouseover mouseleave'.split(' ').forEach(x => {
+    'mouseover mouseleave'.split(' ').forEach((x) => {
       el.addEventListener(x, function() {
         let guide = this.attributes.src.nodeValue;
+
         if (guide.includes('glow')) {
           this.src = `img/${guide.slice(8)}`;
         } else {
