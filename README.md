@@ -31,6 +31,7 @@ Production tools & libraries / plugins / APIs:
 * [parsley](https://parsleyjs.org/)
 * Mapbox and turf/length
 * [blocks.css](https://github.com/thesephist/blocks.css)
+
 & an honourable mention to paint.net
 
 Object literals have been used far more frequently than functions, and in a only half successful attempt to cut down on CSS, DOM elements are more than not created / positioned relative to vp via JS itself. Half the graphics are actual images and the other half canvas-drawn, and there's not really any grand justification for this except that canvas is cool but not super great to animate, and drawing semi-realistic cars in code was a bit extra even for me.
